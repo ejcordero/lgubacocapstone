@@ -1,0 +1,5 @@
+{
+  "name": "BACCU",
+  "description": "Official AI assistant for Baco Municipality, providing information on local services, tourism, history, and government.",
+  "requestFramePermissions": []
+}

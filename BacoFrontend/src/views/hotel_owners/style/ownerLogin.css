@@ -1,0 +1,731 @@
+/* ══════════════════════════════════════════════════════════════════════
+   OWNER LOGIN  —  src/views/hotel_owners/views/OwnerLogin.vue
+   Design reference: "TURISMO — Hotel Owner Portal".
+
+   ISOLATION CONTRACT
+   Loaded from main.js exactly like views/admin/style/login.css, and every
+   single rule below is prefixed with .ol-root. Nothing here can reach any
+   other page, and nothing on any other page can reach in here. This matters
+   more than usual on this file: AdminLogin.vue also renders a root element
+   called .login-page, and .input-wrap / .form-group / .chip / .divider /
+   .logo are used by a dozen owner and admin views. Those names were the
+   leak; .ol-root is the wall.
+
+   Every token this page needs is declared on .ol-root below. The previous
+   version of this file leaned on --eco-mint and --bb-on-highlight, which are
+   declared in styles/design-tokens-user.css and nowhere else — so the sign-in
+   button took its colour from a stylesheet owned by a different feature.
+   It is self-contained now.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Fraunces + Space Grotesk are loaded from index.html, not with @import.
+   See the note there on why. */
+
+.ol-root {
+  /* ── palette ─────────────────────────────────────────────────────── */
+  --ol-ink: #141614;
+  --ol-ink-2: #3A3F3E;
+  --ol-mut: #7C8280;
+  --ol-faint: #A9AFAA;
+  --ol-line: rgba(20, 22, 20, .09);
+
+  --ol-lime: #A4D40E;
+  --ol-lime-dark: #8CB80A;
+  --ol-lime-soft: rgba(164, 212, 14, .14);
+  --ol-lime-glow: rgba(164, 212, 14, .35);
+
+  --ol-red: #E23B3B;
+  --ol-red-soft: rgba(226, 59, 59, .10);
+  --ol-amber: #B4780B;
+
+  --ol-page: #F3F4EF;
+  --ol-card: #FFFFFF;
+  --ol-deep: #1D2A1D;
+  --ol-shadow: 0 14px 40px rgba(20, 22, 20, .10), 0 3px 10px rgba(20, 22, 20, .05);
+  --ol-shadow-lg: 0 30px 80px rgba(20, 22, 20, .14);
+
+  --ol-font: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --ol-display: 'Fraunces', Georgia, serif;
+
+  /* Motion. One curve, one duration, shared by every transition on the page. */
+  --ol-ease: cubic-bezier(.22, 1, .36, 1);
+  --ol-tap: 180ms;
+
+  color-scheme: light;
+  font-family: var(--ol-font);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.ol-root *,
+.ol-root *::before,
+.ol-root *::after { box-sizing: border-box; }
+
+/* ══════════════ PAGE SHELL ══════════════ */
+
+.ol-root.ol-page {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+  background: var(--ol-page);
+  color: var(--ol-ink);
+}
+
+/* ══════════════ PAGE BACKGROUND PHOTO ══════════════
+   cover-tourism-img.jpg sits behind the whole page, not inside the panel.
+   It is blurred and scaled past 100% so the blur has no soft edge to give
+   away, then washed with the page colour so the card keeps the contrast it
+   needs. Fixed positioning keeps it still while the card is centred. */
+
+.ol-root .ol-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ol-root .ol-bg-photo {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: 50% 45%;
+  filter: blur(26px) saturate(1.15);
+  opacity: .55;
+  /* Oversized on purpose: a blurred edge would otherwise read as a vignette. */
+  transform: scale(1.10);
+  will-change: transform;
+  animation: ol-bg-drift 48s ease-in-out infinite alternate;
+}
+@keyframes ol-bg-drift {
+  from { transform: scale(1.10) translate(0, 0); }
+  to { transform: scale(1.16) translate(-1%, 1%); }
+}
+.ol-root .ol-bg-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(243, 244, 239, .78), rgba(243, 244, 239, .88));
+}
+
+.ol-root.ol-page .ol-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+  /* Dialled back now that the photograph is carrying the ambience. */
+  opacity: .30;
+}
+.ol-root.ol-page .ol-blob-1 {
+  width: 46vw; height: 46vw;
+  left: -14vw; top: -18vh;
+  background: radial-gradient(circle, #DDF59A 0%, rgba(221, 245, 154, 0) 68%);
+  animation: ol-drift 38s ease-in-out infinite alternate;
+}
+.ol-root.ol-page .ol-blob-2 {
+  width: 40vw; height: 40vw;
+  right: -12vw; bottom: -14vh;
+  background: radial-gradient(circle, #FBCAC2 0%, rgba(251, 202, 194, 0) 68%);
+  animation: ol-drift 38s ease-in-out -16s infinite alternate;
+}
+@keyframes ol-drift {
+  from { transform: translate(0, 0); }
+  to { transform: translate(3vw, 2.5vh) scale(1.06); }
+}
+
+.ol-root.ol-page .ol-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: .05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.ol-root .ol-glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, .80), rgba(255, 255, 255, .55));
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, .85);
+  box-shadow: var(--ol-shadow), inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+
+/* ══════════════ CARD ══════════════ */
+
+.ol-root .ol-card-shell {
+  position: relative;
+  z-index: 2;
+  width: min(1120px, 97vw);
+  min-height: 640px;
+  display: grid;
+  grid-template-columns: 1.08fr 1fr;
+  border-radius: 30px;
+  overflow: hidden;
+  background: var(--ol-card);
+  box-shadow: var(--ol-shadow-lg);
+}
+
+/* ══════════════ LEFT / SHOWCASE ══════════════ */
+
+.ol-root .ol-showcase {
+  position: relative;
+  overflow: hidden;
+  background: var(--ol-deep);
+}
+
+/* MT-img.jpg is 3:2 and this panel is close to square, so `cover` trims the
+   width and never the height — the same crop the user sign-in shows, at the
+   same focal point, so the two pages read as one pair. */
+.ol-root .ol-showcase .ol-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: 50% 38%;
+  transform: scale(1.08);
+  will-change: transform;
+  animation: ol-zoom 26s ease-in-out infinite alternate;
+}
+@keyframes ol-zoom {
+  from { transform: scale(1.08) translate(0, 0); }
+  to { transform: scale(1.16) translate(-1.2%, 1.2%); }
+}
+
+.ol-root .ol-showcase::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgba(10, 14, 8, .48) 0%,
+    rgba(10, 14, 8, .10) 38%,
+    rgba(10, 14, 8, .66) 100%);
+}
+
+.ol-root .ol-showcase .ol-sc-top {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 3;
+  padding: 30px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ol-root .ol-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+/* BACO-TOURISM.png is a wide lockup (642x283, content ~3.24:1), not a square
+   badge, so the mark is sized to the artwork's own aspect. Width-driven, height
+   follows, and the fit rule is exact so the logo can never be cropped. */
+.ol-root .ol-logo-mark {
+  display: block;
+  width: 184px;
+  height: auto;
+  flex: 0 0 auto;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+.ol-root .ol-logo-mark i { font-size: 19px; }
+.ol-root .ol-logo-mark img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: 14px;
+}
+.ol-root .ol-logo b {
+  display: block;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  line-height: 1;
+  color: #fff;
+}
+.ol-root .ol-logo span {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .22em;
+  color: rgba(255, 255, 255, .70);
+}
+
+.ol-root .ol-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #fff;
+  background: rgba(255, 255, 255, .14);
+  border: 1px solid rgba(255, 255, 255, .28);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.ol-root .ol-badge i { color: var(--ol-lime); }
+
+/* Floating stat chips */
+.ol-root .ol-showcase .ol-chip {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-radius: 16px;
+  animation: ol-float 6s ease-in-out infinite;
+}
+.ol-root .ol-chip .ol-chip-icon {
+  display: grid;
+  place-items: center;
+  width: 38px; height: 38px;
+  flex: 0 0 auto;
+  border-radius: 11px;
+}
+.ol-root .ol-chip b {
+  display: block;
+  font-family: var(--ol-display);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ol-ink);
+}
+.ol-root .ol-chip span {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ol-mut);
+}
+.ol-root .ol-chip.ol-c1 { top: 110px; right: 26px; animation-delay: -1s; }
+.ol-root .ol-chip.ol-c2 { top: 190px; right: 56px; animation-delay: -3s; }
+.ol-root .ol-chip.ol-c3 { bottom: 150px; left: 32px; animation-delay: -4.5s; }
+@keyframes ol-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+.ol-root .ol-chip.ol-c1 .ol-chip-icon { background: var(--ol-lime-soft); color: #6d8f06; }
+.ol-root .ol-chip.ol-c2 .ol-chip-icon { background: var(--ol-red-soft); color: var(--ol-red); }
+.ol-root .ol-chip.ol-c3 .ol-chip-icon { background: rgba(46, 107, 230, .12); color: #2E6BE6; }
+
+.ol-root .ol-live-dot {
+  position: relative;
+  width: 7px; height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--ol-lime);
+}
+.ol-root .ol-live-dot::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ol-lime);
+  animation: ol-ring 1.8s ease-out infinite;
+}
+@keyframes ol-ring {
+  from { transform: scale(.5); opacity: 1; }
+  to { transform: scale(1.4); opacity: 0; }
+}
+
+.ol-root .ol-showcase .ol-sc-bottom {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 3;
+  padding: 30px 32px;
+}
+.ol-root .ol-showcase .ol-sc-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ol-lime);
+}
+.ol-root .ol-showcase .ol-sc-tag::before {
+  content: '';
+  width: 22px; height: 2px;
+  border-radius: 2px;
+  background: var(--ol-lime);
+}
+.ol-root .ol-showcase .ol-sc-title {
+  max-width: 420px;
+  margin: 0;
+  font-family: var(--ol-display);
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -.02em;
+  color: #fff;
+}
+.ol-root .ol-showcase .ol-sc-title em {
+  font-style: italic;
+  color: var(--ol-lime);
+}
+.ol-root .ol-showcase .ol-sc-sub {
+  max-width: 400px;
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, .75);
+}
+
+/* ══════════════ RIGHT / FORM ══════════════ */
+
+.ol-root .ol-form-side {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 48px 52px 36px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, .92), rgba(255, 255, 255, .78));
+}
+
+.ol-root .ol-mobile-head { display: none; }
+
+.ol-root .ol-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.ol-root .ol-title {
+  margin: 0 0 6px;
+  font-family: var(--ol-display);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -.02em;
+  color: var(--ol-ink);
+}
+.ol-root .ol-title em {
+  font-style: italic;
+  color: var(--ol-lime-dark);
+}
+.ol-root .ol-sub {
+  margin: 0 0 28px;
+  font-size: 13.5px;
+  color: var(--ol-mut);
+}
+
+/* ══════════════ ALERTS ══════════════ */
+
+.ol-root .ol-alert {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ol-red);
+  background: var(--ol-red-soft);
+  border: 1px solid rgba(226, 59, 59, .25);
+}
+.ol-root .ol-alert i { flex: 0 0 auto; }
+
+.ol-root .ol-notice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding: 14px;
+  border-radius: 10px;
+}
+.ol-root .ol-notice.is-pending {
+  background: rgba(245, 158, 11, .07);
+  border: 1px solid rgba(245, 158, 11, .30);
+}
+.ol-root .ol-notice.is-pending i { color: var(--ol-amber); }
+.ol-root .ol-notice.is-rejected {
+  background: var(--ol-red-soft);
+  border: 1px solid rgba(226, 59, 59, .25);
+}
+.ol-root .ol-notice.is-rejected i { color: var(--ol-red); }
+.ol-root .ol-notice i { flex: 0 0 auto; margin-top: 1px; }
+.ol-root .ol-notice strong {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 12.5px;
+}
+.ol-root .ol-notice.is-pending strong { color: var(--ol-amber); }
+.ol-root .ol-notice.is-rejected strong { color: var(--ol-red); }
+.ol-root .ol-notice p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ol-ink-2);
+}
+.ol-root .ol-notice a {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ol-red);
+  text-decoration: none;
+}
+.ol-root .ol-notice a:hover { text-decoration: underline; }
+
+/* ══════════════ FIELDS ══════════════ */
+
+.ol-root .ol-group { margin-bottom: 17px; }
+
+.ol-root .ol-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ol-mut);
+}
+
+.ol-root .ol-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.ol-root .ol-input-wrap > i {
+  position: absolute;
+  left: 15px;
+  width: 16px;
+  color: var(--ol-faint);
+  font-size: 12px;
+  pointer-events: none;
+  transition: color var(--ol-tap) var(--ol-ease);
+}
+
+.ol-root .ol-input {
+  width: 100%;
+  height: 50px;
+  padding: 0 46px 0 44px;
+  font-family: inherit;
+  font-size: 14.5px;
+  color: var(--ol-ink);
+  background: rgba(255, 255, 255, .75);
+  border: 1.5px solid var(--ol-line);
+  border-radius: 14px;
+  outline: none;
+  transition: border-color var(--ol-tap) var(--ol-ease), box-shadow var(--ol-tap) var(--ol-ease), background var(--ol-tap) var(--ol-ease);
+}
+.ol-root .ol-input::placeholder { color: var(--ol-faint); }
+.ol-root .ol-input:focus {
+  border-color: var(--ol-lime-dark);
+  background: #fff;
+  box-shadow: 0 0 0 4px var(--ol-lime-soft);
+}
+.ol-root .ol-input-wrap:focus-within > i { color: var(--ol-lime-dark); }
+
+.ol-root .ol-eye {
+  position: absolute;
+  right: 9px;
+  display: grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  background: none;
+  border: none;
+  border-radius: 9px;
+  color: var(--ol-faint);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color var(--ol-tap) var(--ol-ease);
+}
+.ol-root .ol-eye:hover { color: var(--ol-ink); }
+
+.ol-root .ol-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 2px 0 22px;
+  font-size: 13px;
+}
+.ol-root .ol-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--ol-ink-2);
+  cursor: pointer;
+  user-select: none;
+}
+.ol-root .ol-check input {
+  position: absolute;
+  width: 19px; height: 19px;
+  opacity: 0;
+  pointer-events: none;
+}
+.ol-root .ol-check span {
+  display: grid;
+  place-items: center;
+  width: 19px; height: 19px;
+  flex: 0 0 auto;
+  border-radius: 6px;
+  border: 1.5px solid rgba(20, 22, 20, .22);
+  background: rgba(255, 255, 255, .8);
+  transition: background var(--ol-tap) var(--ol-ease), border-color var(--ol-tap) var(--ol-ease);
+}
+.ol-root .ol-check span::after {
+  content: '\2713';
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ol-ink);
+  opacity: 0;
+  transform: scale(.4);
+  transition: opacity var(--ol-tap) var(--ol-ease), transform var(--ol-tap) var(--ol-ease);
+}
+.ol-root .ol-check input:checked + span {
+  background: var(--ol-lime);
+  border-color: var(--ol-lime);
+}
+.ol-root .ol-check input:checked + span::after { opacity: 1; transform: scale(1); }
+.ol-root .ol-check input:focus-visible + span { outline: 2px solid var(--ol-lime-dark); outline-offset: 2px; }
+
+.ol-root .ol-forgot {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ol-red);
+  text-decoration: none;
+}
+.ol-root .ol-forgot:hover { color: var(--ol-ink); }
+
+/* ══════════════ BUTTON ══════════════ */
+
+.ol-root .ol-btn {
+  width: 100%;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 20px;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ol-ink);
+  background: linear-gradient(135deg, #B7E31C, #94C208);
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px var(--ol-lime-glow);
+  transition: transform var(--ol-tap) var(--ol-ease), box-shadow var(--ol-tap) var(--ol-ease), filter var(--ol-tap) var(--ol-ease);
+}
+.ol-root .ol-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: saturate(1.1);
+  box-shadow: 0 14px 30px rgba(164, 212, 14, .45);
+}
+.ol-root .ol-btn:active:not(:disabled) { transform: translateY(0); }
+.ol-root .ol-btn:disabled { opacity: .7; cursor: not-allowed; transform: none; }
+
+/* ══════════════ DIVIDER & REGISTER ══════════════ */
+
+.ol-root .ol-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  font-size: 11px;
+  color: var(--ol-mut);
+}
+.ol-root .ol-divider::before,
+.ol-root .ol-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ol-line);
+}
+
+.ol-root .ol-register {
+  margin: auto 0 0;
+  padding-top: 26px;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--ol-mut);
+}
+.ol-root .ol-register a {
+  font-weight: 600;
+  color: var(--ol-red);
+  text-decoration: none;
+}
+.ol-root .ol-register a:hover {
+  color: var(--ol-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ══════════════ RESPONSIVE ══════════════ */
+
+@media (max-width: 920px) {
+  .ol-root .ol-card-shell {
+    width: min(480px, 97vw);
+    min-height: 0;
+    grid-template-columns: 1fr;
+    border-radius: 24px;
+  }
+  .ol-root .ol-showcase {
+    min-height: 210px;
+    max-height: 260px;
+  }
+  .ol-root .ol-showcase .ol-photo { animation: none; transform: none; }
+  .ol-root .ol-showcase .ol-sc-top { padding: 18px 20px; }
+  .ol-root .ol-logo-mark { width: 140px; }
+  .ol-root .ol-logo-mark i { font-size: 16px; }
+  .ol-root .ol-logo b { font-size: 16px; }
+  .ol-root .ol-badge { font-size: 10px; padding: 6px 10px; }
+  .ol-root .ol-chip.ol-c1 { top: 68px; right: 16px; }
+  .ol-root .ol-chip.ol-c2 { display: none; }
+  .ol-root .ol-chip.ol-c3 { bottom: 16px; left: 16px; }
+  .ol-root .ol-showcase .ol-sc-bottom { display: none; }
+
+  .ol-root .ol-form-side { padding: 30px 26px; }
+  .ol-root .ol-mobile-head {
+    display: block;
+    margin-bottom: 22px;
+  }
+  .ol-root .ol-mobile-head h2 {
+    margin: 0;
+    font-family: var(--ol-display);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--ol-ink);
+  }
+  .ol-root .ol-mobile-head h2 em {
+    font-style: italic;
+    color: var(--ol-lime-dark);
+  }
+  .ol-root .ol-mobile-head p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--ol-mut);
+  }
+  .ol-root .ol-form > .ol-title,
+  .ol-root .ol-form > .ol-sub { display: none; }
+}
+
+/* ══════════════ REDUCED MOTION ══════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ol-root .ol-bg-photo,
+  .ol-root.ol-page .ol-blob,
+  .ol-root .ol-showcase .ol-photo,
+  .ol-root .ol-showcase .ol-chip,
+  .ol-root .ol-live-dot::after { animation: none; }
+  .ol-root .ol-btn:hover:not(:disabled) { transform: none; }
+}

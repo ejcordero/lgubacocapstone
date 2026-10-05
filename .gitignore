@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Environment variables (CRITICAL - contains secrets)
+.env
+.env.*
+!.env.example
+
+# VS Code Local History (contains .env copies with timestamps!)
+.history/
+
+# Logs
+*.log
+npm-dev.log
+
+# Runtime user uploads (ephemeral on Railway)
+BacoBackend/uploads/
+BacoBackend/admin_uploads/
+BacoBackend/owner_uploads/
+BacoBackend/downloads/
+BacoBackend/halcon_documents/
+BacoBackend/charters/
+BacoBackend/ocr-temp/
+
+# Build output
+dist/
+BacoFrontend/dist/
+
+# Archives & misc
+*.zip
+BacoBackend/routes.zip
+
+# Large OCR model files (tesseract.js downloads these at runtime)
+BacoBackend/tesseract-data/
+BacoBackend/eng.traineddata
+
+# OS / editor
+.DS_Store
+Thumbs.db

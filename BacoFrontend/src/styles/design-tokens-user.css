@@ -1,0 +1,433 @@
+/* ============================================================================
+   BACO -- shared design tokens (EXTRACTED, DO NOT EDIT IN PLACE)
+   ----------------------------------------------------------------------------
+   These blocks were moved out of views/user/UserLayout.vue and into their own
+   stylesheet, imported by main.js, for two reasons:
+
+     1. They were declared on a bare :root inside a COMPONENT's unscoped style
+        block, so they only reached the document once that component had
+        loaded. A session landing directly on /owner never mounts the user
+        portal, so --bb-* and --eco-* were undefined there and every shared
+        class copied from the user dashboard resolved to nothing.
+
+     2. With one file, the owner portal can reuse these values verbatim rather
+        than copying them, which is what let the two drift apart in the first
+        place.
+
+   Nothing about the values changed. If you need to change a token, change it
+   HERE, not in UserLayout.vue.
+   ============================================================================ */
+:root {
+  /* ── Fonts ── */
+  --bb-font-display: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  --bb-font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --bb-font-mono: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+
+  /* ── Eco ramp ──
+     Repointed at the new brand palette. These are consumed directly by a
+     handful of components (hero highlight, badges, dark tiles), so they
+     alias the brand tokens rather than holding separate values. */
+  --eco-deepest: #101C16;
+  --eco-deep: #101C16;
+  --eco-forest: #516308;
+  --eco-moss: #046A78;
+  --eco-sage: #6B5433;
+  --eco-mint: #B0D91E;
+  --eco-pale: #F4F8E3;
+  --eco-true: #516308;
+  --eco-true-light: #9CBE15;
+  --tint: #F2F3F7;
+  --tint2: #EDEFF4;
+  --line: rgba(21, 23, 35, 0.10);
+  --line-strong: rgba(21, 23, 35, 0.18);
+  --star: #7A5300;
+  --muted: #3F5449;
+  --faint: #626F58;
+  --mint-shadow: 0 12px 26px rgba(176, 217, 30, 0.28);
+  --mint-shadow-lg: 0 18px 40px rgba(176, 217, 30, 0.34);
+
+  /* ══ Ambience — the blobs + ridge the glass blurs ══
+     No image request, no luminosity blend: three solid-colour blurs
+     composite far cheaper than a full-bleed photo, and the glass above
+     them reads cleanly instead of picking up a photo's colour cast. */
+  --amb-blob: 80px;          /* blur radius */
+  --amb-blob-opacity: 0.85;
+  --amb-blob-1: #E6FAFD;     /* cyan tint  */
+  --amb-blob-2: #F5F9E4;     /* lime tint  */
+  --amb-blob-3: #FEF7E6;     /* amber tint */
+  --amb-ridge: 30vh;         /* ridge height */
+  --amb-ridge-1: #DCEFF2;
+  --amb-ridge-2: #E8EFCF;
+
+
+  /* ── Surfaces ──
+     FLAT. The canvas is a cool off-white (#F9F9FB) and cards are pure
+     white, so a card separates from the page by a hairline AND a half-step
+     of luminance — no fill blocks, no heavy shadow.
+
+     Every text/status value below was re-measured against #F9F9FB, which
+     is slightly darker than pure white and therefore marginally harsher.
+     Tightest pair is --bb-sun at 4.70:1; everything else sits at 4.9-14.8.
+
+     --bb-bg-subtle is the one cooler grey, reserved for wells, inset
+     fields and calendar trays so an input reads as pressable on a card. */
+  --bb-bg: #F9F9FB;
+  --bb-bg-subtle: #F2F3F7;
+  --bb-surface: #FFFFFF;
+  --bb-surface-raised: #FFFFFF;
+  --bb-charcoal: #173826;
+  --bb-ink: #182720;
+  --bb-text-secondary: #3F5449;
+  --bb-text-tertiary: #626F58;   /* 5.08:1 on the canvas, 4.81:1 on a well */
+  --bb-border: rgba(21, 23, 35, 0.10);
+  --bb-border-strong: rgba(21, 23, 35, 0.18);
+
+  /* ── Soft-UI ──
+     Reduced to a supporting role. On a near-white canvas a full neumorphic
+     shadow pair is nearly invisible, so the dark component is much lighter
+     than before and is used ONLY for inset wells, inset chips and calendar
+     trays. Cards and buttons are flat (see --bb-shadow-*). */
+  --bb-nm-base: #F2F3F7;
+  --bb-nm-dark: rgba(21, 23, 35, 0.07);
+  --bb-nm-light: #FFFFFF;
+  --bb-nm-raised: 2px 2px 5px var(--bb-nm-dark), -2px -2px 5px var(--bb-nm-light);
+  --bb-nm-raised-sm: 1px 1px 3px var(--bb-nm-dark), -1px -1px 3px var(--bb-nm-light);
+  --bb-nm-inset: inset 2px 2px 5px var(--bb-nm-dark), inset -2px -2px 5px var(--bb-nm-light);
+  --bb-nm-inset-sm: inset 2px 2px 4px var(--bb-nm-dark), inset -2px -2px 4px var(--bb-nm-light);
+
+  /* ── Accent: lime for emphasis, deep green for action ──
+     Two-tier, per the reference. Lime is a highlight (badges, active
+     chips, the hero name) and is never the primary button fill on a
+     light surface; --bb-accent (deep green) is what carries white text. */
+  /* ── BRAND PALETTE ──
+     #B0D91E lime · #07DBF2 cyan · #F2B807 amber · #D9B384 tan · #F20707 red
+
+     These five are FILL colours, not text colours. Measured:
+       as text on the #F9F9FB canvas   1.56 – 4.37  -> all FAIL WCAG AA
+       with white text on them         1.64 – 4.37  -> all FAIL
+       as a fill with #101C16 ink      8.95 – 10.66 -> all PASS comfortably
+
+     So every one of them is used as a fill carrying the dark ink, and each
+     has a derived "ink" variant for the cases where the colour has to be
+     type or a border on the light canvas. The ink variants were derived by
+     darkening until they cleared 4.5:1 against BOTH white and their own
+     soft tint. The five originals are preserved as *-bright, which on the
+     dark canvas are excellent as text (9.36 – 11.16) and are used there.
+
+     --bb-ink and the neutral text ramp are deliberately NOT part of this
+     palette. Body copy has to stay a near-black neutral; tinting it tan
+     would put it at 1.86:1.                                        */
+  --bb-ink-lime: #101C16;      /* ink for any of the five fills */
+
+  --bb-accent: #B0D91E;                            /* lime  — primary action fill */
+  --bb-accent-ink: #516308;                        /* 6.36 on canvas, 6.18 on soft */
+  --bb-accent-hover: #9CBE15;
+  --bb-accent-soft: #F4F8E3;
+  --bb-on-accent: #101C16;                         /* 10.66:1 on the lime fill */
+
+  --bb-highlight: #07DBF2;                         /* cyan  — emphasis, info chips */
+  --bb-highlight-ink: #046A78;                     /* 5.98 on canvas */
+  --bb-highlight-hover: #05B9CD;
+  --bb-highlight-soft: #E4F9FC;
+  --bb-on-highlight: #101C16;                      /* 10.36:1 on the cyan fill */
+
+  --bb-deep: #101C16;                              /* near-black panels, avatars */
+  --bb-on-deep: #F4F8E3;
+
+  /* ── Warm complement (star gold) ── */
+  --bb-sun: #7A5300;                 /* amber ink — 6.52 on canvas */
+  --bb-sun-bright: #F2B807;          /* amber fill — 9.70 with dark ink */
+  --bb-sun-soft: #FEF6E0;
+
+  /* ── Status ──
+     Each is the deep "ink" form so status text is legible on the light
+     canvas; each *-soft is its chip background. Measured on canvas / soft:
+       success  #516308  6.36 / 6.18
+       warning  #7A5300  6.52 / 6.35
+       info     #046A78  5.98 / 5.77
+       danger   #C70505  5.78 / 5.29
+       neutral  #6B5433  6.79 / 6.42                                     */
+  --bb-success: #516308;   --bb-success-soft: #F4F8E3;
+  --bb-warning: #7A5300;   --bb-warning-soft: #FEF6E0;
+  --bb-info: #046A78;      --bb-info-soft: #E4F9FC;
+  --bb-danger: #C70505;    --bb-danger-soft: #FDEBEB;
+  /* Solid danger FILL. The vivid #F20707 cannot carry dark ink (4.01:1) and
+     cannot carry white either (4.37:1), so a solid button needs this deeper
+     step: #EC0606 with white text is 4.57:1 and passes. #F20707 stays
+     available as --bb-danger-bright for borders, dots and glows, where it
+     is not carrying text. */
+  --bb-danger-solid: #EC0606;
+  --bb-on-danger-solid: #FFFFFF;
+  --bb-neutral: #6B5433;   --bb-neutral-soft: #F8F2EA;
+  /* Originals, for fills and for text on the dark canvas */
+  --bb-danger-bright: #F20707;
+  --bb-info-bright: #07DBF2;
+  --bb-lime-bright: #B0D91E;
+  --bb-tan-bright: #D9B384;
+  --bb-tan: #D9B384;        /* tan as a surface: chips, borders, avatars */
+  --bb-tan-ink: #6B5433;
+  --bb-tan-soft: #F8F2EA;
+
+
+  /* ── Glass: chrome only ──
+     Reserved for position:fixed / sticky surfaces (sidebar, header,
+     dock, dropdowns, modals). Anything that scrolls relative to the
+     backdrop re-blurs every frame, so scrolling content stays flat
+     and opaque. Blur steps up with elevation: chrome 24-26, overlay 30.
+
+     On a white canvas the fill has to be DENSER than it was on the tinted
+     canvas, otherwise the chrome disappears into the page. The ambience
+     blobs are what it blurs, so their opacity is raised to match. */
+  --bb-glass-blur: 24px;
+  --bb-glass-blur-lg: 30px;
+  --bb-glass-sat: 1.6;
+  --bb-glass-bg: rgba(255, 255, 255, 0.72);
+  --bb-glass-bg-strong: rgba(255, 255, 255, 0.88);
+  --bb-glass-bg-deep: rgba(255, 255, 255, 0.96);
+  /* Chrome panels. Separate from --bb-glass-bg because the sidebar and
+     topbar need their own opacity, and because a hardcoded white rgba()
+     would render as a washed-out light panel on the dark canvas. */
+  --bb-glass-panel: rgba(255, 255, 255, 0.74);
+  --bb-glass-bar: rgba(255, 255, 255, 0.70);
+  --bb-glass-drawer: rgba(255, 255, 255, 0.90);
+  --bb-glass-border: rgba(255, 255, 255, 0.95);
+  --bb-glass-shadow: 0 1px 2px rgba(21, 23, 35, 0.04), 0 8px 24px -12px rgba(21, 23, 35, 0.13);
+  --bb-glass-lg: 0 2px 4px rgba(21, 23, 35, 0.04), 0 20px 48px -20px rgba(21, 23, 35, 0.17);
+
+  /* ── Content glass ──
+     Kept for the few panels that genuinely overlay content (the hero
+     banner, stat cards). Same 8px tier rule as before. */
+  --bb-glass-blur-content: 8px;
+  --bb-glass-bg-content: rgba(255, 255, 255, 0.86);
+  --bb-glass-border-content: rgba(255, 255, 255, 0.95);
+  --bb-glass-tint: rgba(242, 243, 247, 0.82);
+  --bb-glass-tint2: rgba(233, 236, 244, 0.74);
+
+  /* ── Radius ──
+     Tightened for a denser layout. One scale; pills are always
+     --bb-radius-pill and must not also be a literal 999px. */
+  --bb-radius-xs: 6px;
+  --bb-radius-sm: 8px;
+  --bb-radius-md: 10px;
+  --bb-radius-lg: 12px;
+  --bb-radius-xl: 16px;
+  --bb-radius-2xl: 18px;
+  --bb-radius-pill: 999px;
+  --bb-radius-full: 999px;
+
+  /* ── Shadows ──
+     FLAT: a card is a white fill + hairline + one very soft lift. No
+     green tint, no stacked offsets. Anything needing real depth is
+     chrome and uses --bb-glass-lg. */
+  --bb-shadow-xs: 0 1px 2px rgba(21, 23, 35, 0.04);
+  --bb-shadow-sm: 0 1px 2px rgba(21, 23, 35, 0.05);
+  --bb-shadow-md: 0 2px 6px -2px rgba(21, 23, 35, 0.09);
+  --bb-shadow-lg: 0 8px 20px -8px rgba(21, 23, 35, 0.13);
+  --bb-shadow-dock: 0 8px 24px -10px rgba(21, 23, 35, 0.17);
+  --bb-ring: 0 0 0 3px rgba(205, 242, 90, 0.45);
+
+  /* ── Motion ── */
+  --bb-dur-fast: 150ms;
+  --bb-dur-base: 250ms;
+  --bb-dur-slow: 400ms;
+  --bb-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --bb-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── Type scale ──
+     Ten steps on a ~1.2 ratio, anchored at 14px for body copy. Every
+     font-size in the folder resolves to one of these — that is what makes
+     two components that both say "small caption" actually render the same
+     size. Before this existed the folder had 97 distinct values spanning
+     9px to 48px, including near-duplicates like .84rem next to .85rem.
+
+     A step is chosen for its role, so the name says what it is for:
+       2xs  11px  micro labels, badge text, chart ticks
+       xs   12px  meta, captions, timestamps
+       sm   13px  secondary body, table cells, helper text
+       base 14px  body copy (the default)
+       md   15px  lead paragraphs, list primary text
+       lg   16px  emphasised body, input values
+       xl   18px  card titles
+       2xl  22px  section headings
+       3xl  28px  page headings
+       4xl  36px  hero display                                        */
+  --bb-text-2xs: 0.6875rem;
+  --bb-text-xs: 0.75rem;
+  --bb-text-sm: 0.8125rem;
+  --bb-text-base: 0.875rem;
+  --bb-text-md: 0.9375rem;
+  --bb-text-lg: 1rem;
+  --bb-text-xl: 1.125rem;
+  --bb-text-2xl: 1.375rem;
+  --bb-text-3xl: 1.75rem;
+  --bb-text-4xl: 2.25rem;
+
+  /* ── Weights ──
+     Four steps. "bold" was mixed in with 700 across the folder, which
+     renders the same but reads as two different intents in the source. */
+  --bb-weight-regular: 400;
+  --bb-weight-medium: 500;
+  --bb-weight-semibold: 600;
+  --bb-weight-bold: 700;
+  --bb-weight-extrabold: 800;
+
+  /* ── Tracking ──
+     Two values only: tightened for large headings (which need negative
+     tracking to look tight), positive for the small uppercase labels that
+     need air. Everything in between was arbitrary. */
+  --bb-track-tight: -0.02em;
+  --bb-track-wide: 0.08em;
+
+  /* ── Layers / layout ──
+     COMPACT: every chrome dimension trimmed. The sidebar loses 32px, the
+     header 12px, the dock 8px, and the gutters are on a tighter clamp. */
+  --bb-z-sticky: 40;
+  --bb-z-header: 50;
+  --bb-z-dock: 60;
+  --bb-z-overlay: 80;
+  --bb-z-modal: 90;
+  --bb-z-toast: 100;
+  --bb-dock-h: 56px;
+  --bb-sidebar-w: 220px;
+  --bb-sidebar-w-collapsed: 68px;
+  --bb-header-h: 64px;
+  --bb-content-max: 1320px;
+  --bb-gutter: clamp(1rem, 2vw, 1.75rem);
+  --bb-shell-gap: 18px;
+
+  /* ══ Legacy bridge — now pure aliases onto the new tokens ══
+     These are consumed ~180 times across the folder (--navy 62,
+     --muted 44, --rust 24, …). They are kept as names so no view has to
+     change, but every value is now derived: one place to edit, and dark
+     mode no longer needs its own legacy block. */
+  /* NOTE: --font-display / --font-body / --font-mono are deliberately NOT
+     aliased here. Nothing in this folder consumes them (0 uses), they are
+     unprefixed so they collide with src/styles/theme.css, and redefining
+     them on :root leaked the portal's typeface into the admin and
+     hotel-owner portals, which are meant to use Playfair Display / Inter. */
+  --ink: var(--bb-ink);
+  --navy: var(--bb-deep);
+  --navy-2: var(--bb-accent);
+  --navy-soft: var(--bb-accent-soft);
+  --navy-soft-2: var(--bb-bg-subtle);
+  --rust: var(--bb-accent);
+  --rust-soft: var(--bb-accent-soft);
+  --forest: var(--bb-accent);
+  --forest-soft: var(--bb-success-soft);
+  --amber: var(--bb-sun);
+  --amber-soft: var(--bb-sun-soft);
+  --surface: var(--bb-surface);
+  /* --sand / --sand-2 are the RECESSED tones: input fields, inset rows and
+     wells. They used to alias the canvas, but the canvas is now a distinct
+     off-white (#F9F9FB) while cards are pure white, so a field painted with
+     the canvas colour would be invisible against the card it sits on.
+     Pointing them at --bb-bg-subtle is what makes those controls read as
+     pressable again. */
+  --sand: var(--bb-bg-subtle);
+  --sand-2: #EDEFF4;
+  --border: var(--bb-border);
+  --border-soft: var(--bb-border);
+  --muted: var(--bb-text-secondary);
+  --muted-2: var(--bb-text-tertiary);
+  --radius-sm: var(--bb-radius-sm);
+  --radius-md: var(--bb-radius-md);
+  --radius-lg: var(--bb-radius-lg);
+  --radius-pill: var(--bb-radius-pill);
+  /* --shadow-xs/sm/md/lg are deliberately NOT aliased. Those names are
+     unprefixed and collide with src/styles/theme.css, so which value won
+     depended on stylesheet order. Every consumer in this folder now reads
+     --bb-shadow-* directly. */
+  --c-primary: var(--bb-ink);
+  --c-danger: var(--bb-danger);
+  --c-muted: var(--bb-text-secondary);
+  --c-border: var(--bb-border);
+}
+
+:root[data-theme="dark"] {
+  --bb-bg: #101613;
+  --bb-bg-subtle: #161E1A;
+  --bb-surface: #1A231E;
+  --bb-surface-raised: #202A24;
+  --bb-charcoal: #0C120F;
+  --bb-ink: #E8EFE9;
+  --bb-text-secondary: #A3B3A8;
+  --bb-text-tertiary: #74857A;
+  --bb-border: rgba(232, 239, 233, 0.10);
+  --bb-border-strong: rgba(232, 239, 233, 0.20);
+
+  --bb-nm-base: #1A231E;
+  --bb-nm-dark: rgba(0, 0, 0, 0.45);
+  --bb-nm-light: rgba(232, 239, 233, 0.05);
+
+  /* Chrome glass on a dark canvas: a light fill would read as a washed-out
+     light panel, so the panels go dark-translucent and only the border
+     stays light, which is what keeps the edge visible. */
+  --bb-glass-bg: rgba(26, 35, 30, 0.72);
+  --bb-glass-bg-strong: rgba(32, 42, 36, 0.86);
+  --bb-glass-bg-deep: rgba(32, 42, 36, 0.94);
+  --bb-glass-panel: rgba(26, 35, 30, 0.74);
+  --bb-glass-bar: rgba(26, 35, 30, 0.68);
+  --bb-glass-drawer: rgba(26, 35, 30, 0.90);
+  --bb-glass-border: rgba(232, 239, 233, 0.14);
+
+  /* DARK: the five brand colours are excellent as TEXT here
+     (9.36 – 11.16 on this canvas), so the vivid originals become the
+     ink values and only red needs a nudge. */
+  --bb-accent: #B0D91E;
+  --bb-accent-ink: #B0D91E;
+  --bb-accent-hover: #C4E93A;
+  --bb-accent-soft: rgba(176, 217, 30, 0.16);
+  --bb-on-accent: #101C16;
+
+  --bb-highlight: #07DBF2;
+  --bb-highlight-ink: #07DBF2;
+  --bb-highlight-hover: #3AE4F6;
+  --bb-highlight-soft: rgba(7, 219, 242, 0.16);
+  --bb-on-highlight: #101C16;
+
+  --bb-sun: #F2B807;
+  --bb-sun-bright: #F2B807;
+  --bb-sun-soft: rgba(242, 184, 7, 0.16);
+
+  --bb-success: #B0D91E;  --bb-success-soft: rgba(176, 217, 30, 0.16);
+  --bb-warning: #F2B807;  --bb-warning-soft: rgba(242, 184, 7, 0.16);
+  --bb-info: #07DBF2;     --bb-info-soft: rgba(7, 219, 242, 0.16);
+  --bb-danger: #F94B4B;   --bb-danger-soft: rgba(249, 75, 75, 0.18);
+  --bb-danger-solid: #F20707;
+  --bb-on-danger-solid: #101C16;
+  --bb-neutral: #D9B384;  --bb-neutral-soft: rgba(217, 179, 132, 0.16);
+  --bb-tan: #D9B384;
+  --bb-tan-ink: #D9B384;
+  --bb-tan-soft: rgba(217, 179, 132, 0.16);
+  --bb-danger-bright: #F20707;
+  --bb-info-bright: #07DBF2;
+  --bb-lime-bright: #B0D91E;
+  --bb-tan-bright: #D9B384;
+
+  --muted: #A3B3A8;
+  --faint: #74857A;
+  --line: rgba(232, 239, 233, 0.10);
+  --line-strong: rgba(232, 239, 233, 0.20);
+  --tint: rgba(205, 242, 90, 0.06);
+  --tint2: rgba(205, 242, 90, 0.12);
+
+  /* The ambience layer is a light-mode device — in dark mode it only
+     muddies the canvas, so drop it rather than re-tint it. */
+  --amb-blob-opacity: 0.12;
+
+  --bb-glass-bg: rgba(22, 36, 15, 0.62);
+  --bb-glass-bg-strong: rgba(28, 45, 20, 0.82);
+  --bb-glass-border: rgba(239, 248, 216, 0.14);
+  --bb-glass-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+  --bb-glass-lg: 0 18px 44px rgba(0, 0, 0, 0.5);
+  --bb-glass-bg-content: rgba(28, 45, 20, 0.72);
+  --bb-glass-border-content: rgba(239, 248, 216, 0.16);
+  --bb-glass-tint: rgba(205, 242, 90, 0.10);
+  --bb-glass-tint2: rgba(205, 242, 90, 0.15);
+
+  --bb-shadow-xs: none;
+  --bb-shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --bb-shadow-md: 0 4px 14px rgba(0,0,0,0.4);
+  --bb-shadow-lg: 0 12px 30px rgba(0,0,0,0.5);
+  --bb-shadow-dock: 0 10px 30px rgba(0,0,0,0.5);
+}

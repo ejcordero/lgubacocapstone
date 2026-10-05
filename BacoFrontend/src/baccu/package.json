@@ -1,0 +1,29 @@
+{
+  "name": "baccu-vue-js",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port=3000 --host=0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@google/genai": "^1.29.0",
+    "@tailwindcss/vite": "^4.1.14",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "lucide-vue-next": "^0.477.0",
+    "vue": "^3.5.13",
+    "vite": "^6.2.0",
+    "express": "^4.21.2",
+    "dotenv": "^17.2.3",
+    "better-sqlite3": "^12.4.1",
+    "motion": "^12.23.24"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.1.14",
+    "vite": "^6.2.0"
+  }
+}

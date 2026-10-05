@@ -1,0 +1,22 @@
+/* ============================================================================
+   USER PORTAL Tailwind bridge (token side only)
+   ----------------------------------------------------------------------------
+   Tailwind itself now lives in ONE global instance, src/styles/tailwind.css.
+   This file used to be that instance: it held `@import "tailwindcss"` with
+   `@source` scoped to this folder, which meant the admin could not use a
+   single utility. The entry has moved so both areas can share it.
+
+   What is left here is only the token bridge, so a generated utility
+   (bg-eco-mint, text-eco-deep, ...) still resolves to the same values as the
+   hand-written --eco-* / --bb-* custom properties the components use. One
+   source of truth: change a token, both sides follow.
+
+   The other style files the user app owns stay in their own .vue components,
+   the way they were originally written:
+     design tokens          -> UserLayout.vue   (global <style>)
+     photo backdrop         -> UserLayout.vue   (scoped <style>)
+     reduced transparency   -> UserLayout.vue
+     dashboard glass        -> UserDashboard.vue (scoped <style>)
+     auth tokens            -> UserAuth.vue
+     sidebar / header       -> UserSidebar.vue, UserHeader.vue
+   ============================================================================ */

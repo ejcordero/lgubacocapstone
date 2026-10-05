@@ -1,0 +1,197 @@
+/* ============================================================================
+   ADMIN MATERIAL LAYER -- skeuomorphism + glassmorphism
+   ----------------------------------------------------------------------------
+   Two materials, two jobs, applied by role:
+
+     pressable  -> skeuo   moulded plastic, sits UP off the surface
+     floating   -> glass   translucency, sits OVER the content
+     content    -> flat    untouched, so tables and forms stay readable
+
+   This file is deliberately TOKEN-ONLY. It defines the custom properties and
+   nothing else; each component's own scoped CSS opts in by referencing them.
+   That matters because a Vue scoped rule carries specificity (0,2,0), so a
+   global utility class can never reliably win against it. Pushing values
+   into tokens means components are edited in place instead of being
+   overridden from the outside.
+
+   SCOPE: everything hangs off `.admin-layout` / `[data-admin-theme]`, never
+   `:root`. AdminLayout.vue still sets a bare `:root` block (see its own
+   comment), and the user portal does the same; neither is copied here so this
+   file cannot leak into public or user pages.
+
+   ACCESSIBILITY -- two pre-existing failures are corrected here, because a
+   material layer that makes controls look great while failing contrast is
+   not an improvement:
+
+     white on --ac #3b82f6 ............ 3.68:1  FAILS 4.5:1
+       -> --m-accent-solid #2f6fd0 ..... 4.88:1  PASS
+     --mt #7d7d8e on the light canvas .. 3.71:1  FAILS 4.5:1
+       -> --m-muted-solid #6e6e80 ....... 4.59:1  PASS
+
+   --ac is left alone because it is also used for focus rings, icons and
+   tinted washes, where 3:1 is the correct threshold and a darker blue would
+   look wrong. Use --m-accent-solid only where WHITE TEXT sits on the fill.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   AMBIENCE
+   Glass only reads as glass when there is something behind it to blur. On a
+   flat #f5f5f8 canvas a translucent panel blurs a flat colour and just looks
+   like a grey box. These three very low alpha washes give the backdrop enough
+   structure for the blur to do something, tuned well below the threshold
+   where they would be visible as blobs in their own right.
+   --------------------------------------------------------------------------- */
+.admin-layout {
+  --m-ambience:
+    radial-gradient(1100px 620px at 12% -8%,
+      rgba(59, 130, 246, 0.16), transparent 62%),
+    radial-gradient(900px 560px at 92% 4%,
+      rgba(255, 182, 0, 0.12), transparent 60%),
+    radial-gradient(760px 520px at 60% 108%,
+      rgba(59, 130, 246, 0.11), transparent 62%);
+}
+
+/* ---------------------------------------------------------------------------
+   SKEUOMORPHISM -- light
+   A moulded key is described by four things, not one: a bright specular along
+   the TOP edge, a shade along the BOTTOM, a contact shadow directly beneath,
+   and a wider cast shadow. Drop any one of the four and it stops reading as
+   physical and becomes "a rectangle with a border".
+   --------------------------------------------------------------------------- */
+.admin-layout[data-admin-theme='light'] {
+  /* The moulded face. Two stops only -- a third reads as wet gloss. */
+  --m-skeuo-face: linear-gradient(180deg, #ffffff 0%, #f7f7fa 100%);
+  --m-skeuo-face-hi: linear-gradient(180deg, #ffffff 0%, #f1f1f7 100%);
+
+  --m-skeuo-edge: rgba(11, 29, 53, 0.10);
+
+  --m-skeuo-shadow:
+    /* top specular */ inset 0  1px 0 0 rgba(255, 255, 255, 0.95),
+    /* bottom shade  */ inset 0 -1px 0 0 rgba(11, 29, 53, 0.07),
+    /* contact       */ 0 1px 2px 0 rgba(11, 29, 53, 0.10),
+    /* cast          */ 0 6px 14px -6px rgba(11, 29, 53, 0.14);
+
+  --m-skeuo-shadow-sm:
+    inset 0  1px 0 0 rgba(255, 255, 255, 0.90),
+    inset 0 -1px 0 0 rgba(11, 29, 53, 0.06),
+    0 1px 2px 0 rgba(11, 29, 53, 0.08);
+
+  /* Pressed. The specular collapses and the contact shadow moves inside,
+     which is what sells "this key is down" rather than "this key moved". */
+  --m-skeuo-pressed:
+    inset 0 2px 4px 0 rgba(11, 29, 53, 0.18),
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.70);
+
+  /* A recessed well -- inputs, read-only fields, troughs. The inverse of a
+     key: the shadow is INSIDE at the top and the highlight at the bottom. */
+  --m-well-shadow:
+    inset 0 2px 4px 0 rgba(11, 29, 53, 0.10),
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.80);
+
+  /* Filled accent that can legally carry white text. */
+  --m-accent-solid: #2f6fd0;
+  --m-accent-edge: rgba(11, 29, 53, 0.16);
+  --m-accent-shadow:
+    inset 0  1px 0 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 0 rgba(11, 29, 53, 0.22),
+    0 1px 2px 0 rgba(11, 29, 53, 0.16),
+    0 6px 14px -6px rgba(11, 29, 53, 0.26);
+
+  --m-muted-solid: #6e6e80;
+}
+
+/* ---------------------------------------------------------------------------
+   SKEUOMORPHISM -- dark
+   The one rule that cannot be copied from light mode. A white top specular is
+   what sells a moulded edge on a light surface, but on a near-black one it
+   reads as haze or a rendering artefact rather than a highlight. So the dark
+   variant keeps the same four parts with different physics:
+
+     specular  0.95 -> 0.07   far dimmer, or it looks like fog
+     top face  #f7f7fa -> #1c1c26   lighter than the surroundings, lit from above
+     bottom    shade stays strong, because there is no bounce light down there
+     cast      black on black, so it carries the depth on its own
+   --------------------------------------------------------------------------- */
+.admin-layout[data-admin-theme='dark'] {
+  --m-skeuo-face: linear-gradient(180deg, #1c1c26 0%, #13131b 100%);
+  --m-skeuo-face-hi: linear-gradient(180deg, #23232f 0%, #16161f 100%);
+
+  --m-skeuo-edge: rgba(255, 255, 255, 0.10);
+
+  --m-skeuo-shadow:
+    inset 0  1px 0 0 rgba(255, 255, 255, 0.07),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.55),
+    0 1px 2px 0 rgba(0, 0, 0, 0.40),
+    0 6px 14px -6px rgba(0, 0, 0, 0.55);
+
+  --m-skeuo-shadow-sm:
+    inset 0  1px 0 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.45),
+    0 1px 2px 0 rgba(0, 0, 0, 0.35);
+
+  --m-skeuo-pressed:
+    inset 0 2px 5px 0 rgba(0, 0, 0, 0.65),
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.05);
+
+  --m-well-shadow:
+    inset 0 2px 5px 0 rgba(0, 0, 0, 0.60),
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.05);
+
+  --m-accent-solid: #2f6fd0;
+  --m-accent-edge: rgba(0, 0, 0, 0.40);
+  --m-accent-shadow:
+    inset 0  1px 0 0 rgba(255, 255, 255, 0.20),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.40),
+    0 1px 2px 0 rgba(0, 0, 0, 0.40),
+    0 6px 14px -6px rgba(0, 0, 0, 0.60);
+
+  /* Dark muted already clears 4.5:1 (4.98), so it is left as-is. */
+}
+
+/* ---------------------------------------------------------------------------
+   GLASS -- floating chrome only
+   The edge is a DARK HAIRLINE, never white. A white border is invisible on a
+   light surface, so a white-glass panel sitting on a light card has no
+   boundary at all and reads as nothing whatsoever. On a light UI, glass has to
+   be described by a hairline plus a cast shadow; the translucency is the
+   effect, not the outline.
+   --------------------------------------------------------------------------- */
+.admin-layout[data-admin-theme='light'] {
+  --m-glass: rgba(255, 255, 255, 0.66);
+  --m-glass-strong: rgba(255, 255, 255, 0.84);
+  --m-glass-edge: rgba(11, 29, 53, 0.10);
+  --m-glass-shadow:
+    0 1px 2px rgba(11, 29, 53, 0.05),
+    0 8px 24px -12px rgba(11, 29, 53, 0.16);
+  --m-glass-shadow-lg:
+    0 2px 4px rgba(11, 29, 53, 0.05),
+    0 20px 48px -20px rgba(11, 29, 53, 0.20);
+}
+
+.admin-layout[data-admin-theme='dark'] {
+  --m-glass: rgba(20, 20, 29, 0.66);
+  --m-glass-strong: rgba(20, 20, 29, 0.86);
+  --m-glass-edge: rgba(255, 255, 255, 0.10);
+  --m-glass-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.40),
+    0 8px 24px -12px rgba(0, 0, 0, 0.60);
+  --m-glass-shadow-lg:
+    0 2px 4px rgba(0, 0, 0, 0.40),
+    0 20px 48px -20px rgba(0, 0, 0, 0.70);
+}
+/* ---------------------------------------------------------------------------
+   END OF TOKEN LAYER
+
+   The utility classes are NOT here. They are @utility definitions in
+   ./tailwind-theme.css, which is the single source for them. Keeping a
+   plain-CSS copy of each class here would let the two drift, and the
+   plain-CSS copy would win over the Tailwind one anyway, because unlayered
+   styles beat layered ones in the cascade.
+
+   Telported content -- modals mounted to <body> -- sits OUTSIDE .admin-layout
+   and so cannot read these tokens by inheritance. The Tailwind utilities have
+   no such limitation, which is one more reason they live in the bridge.
+
+   The prefers-reduced-motion and prefers-reduced-transparency opt-outs for
+   those utilities live in the bridge too, alongside the classes themselves.
+   --------------------------------------------------------------------------- */

@@ -1,0 +1,48 @@
+/* ============================================================================
+   GLOBAL TAILWIND ENTRY
+   ----------------------------------------------------------------------------
+   This is the ONE Tailwind instance for the whole app. It used to live in
+   views/user/style/index.css with @source scoped to that folder, which meant
+   the admin could not use a single utility. Moving it here lets both areas
+   share one instance, one theme bridge and one generated stylesheet.
+
+   Both source roots are listed explicitly rather than using the automatic
+   project-wide scan. The scan is still off (source(none) below) because a
+   blind project-wide scan would start generating utilities for views/public
+   and views/hotel_owners, which are not part of this design system and
+   should not acquire a Tailwind vocabulary they never had.
+
+     views/user   -> the user portal, lime/cyan travel palette
+     views/admin  -> the admin console, municipal blue + gold
+
+   They share this instance but NOT their colours: the @theme bridge below
+   resolves each area's utilities to that area's own tokens, so bg-eco-mint
+   in the portal and m-skeuo in the admin never collide.
+   ============================================================================ */
+
+/* Fonts must come first: an @import that follows any other rule is invalid
+   and gets dropped by the browser. This is why it cannot live in a component
+   <style> block and still be honoured. */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+@import "tailwindcss";
+
+/* The automatic project-wide scan stays OFF, and only these two folders are
+   re-enabled. Do NOT add a broad "./**" source here: relative to this file
+   that would cover all of src, including views/public and views/hotel_owners,
+   which are not part of this design system and should not acquire a Tailwind
+   vocabulary they never had.
+
+     views/user         -> the user portal, lime/cyan travel palette
+     views/admin        -> the admin console, municipal blue + gold
+     views/hotel_owners -> the owner portal, which is being brought onto the
+                           same design system as the user portal */
+@source "../views/user/**/*.{vue,js}";
+@source "../views/admin/**/*.{vue,js}";
+@source "../views/hotel_owners/**/*.{vue,js}";
+
+/* Token bridges: the generated utilities resolve to the same custom
+   properties the hand-written CSS uses, so there is one source of truth. */
+@import "../views/user/style/theme.css";
+@import "../views/admin/style/tailwind-theme.css";
+@import "../views/hotel_owners/style/tailwind-theme.css";

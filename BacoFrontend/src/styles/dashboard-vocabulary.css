@@ -1,0 +1,518 @@
+/* ============================================================================
+   SHARED DASHBOARD VOCABULARY
+   ----------------------------------------------------------------------------
+   The section, header, card and strip primitives that both the user dashboard
+   and the owner dashboard are built from. One definition, so the two portals
+   cannot drift apart visually.
+
+   These rules are lifted verbatim from views/user/UserDashboard.vue. That file
+   still carries its own scoped copies; because a Vue scoped rule is unlayered
+   it wins for the user page, and this global copy serves the owner page. The
+   two are identical, so both render the same. Deduplicating the user side onto
+   this file is the obvious follow-up and is deliberately not done here, since
+   the user portal is currently correct and rewriting it is a separate risk.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   Section scaffolding
+   Every band on the page is a section-block: a column of a header and its
+   content, with a consistent gap.
+   --------------------------------------------------------------------------- */
+.section-block { display: flex; flex-direction: column; gap: 0.875rem; }
+.section-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; padding: 0 0.25rem; }
+.section-title {
+  font-family: var(--bb-font-display);
+  font-size: var(--bb-text-2xl);
+  font-weight: var(--bb-weight-extrabold);
+  color: var(--bb-ink);
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.1;
+}
+.section-sub { font-size: var(--bb-text-sm); color: var(--bb-text-secondary); margin: 4px 0 0; }
+
+/* The pill that links a section to its own page. Filled with the brand step
+   that can carry its on-colour text, not the vivid value. */
+.view-all-btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--eco-mint);
+  color: var(--bb-on-highlight);
+  -webkit-text-fill-color: var(--bb-on-highlight);
+  border: none;
+  border-radius: var(--bb-radius-full);
+  padding: 0.55rem 1.15rem;
+  font-family: var(--bb-font-body);
+  font-size: var(--bb-text-xs);
+  font-weight: var(--bb-weight-extrabold);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--bb-dur-fast) var(--bb-ease);
+  box-shadow: var(--mint-shadow);
+}
+.view-all-btn:hover { transform: translateY(-1px); box-shadow: var(--mint-shadow-lg); }
+
+/* ---------------------------------------------------------------------------
+   Trip strip
+   A single flat rail of figures. Each item is a button when it navigates and
+   a plain div when it is only a reading -- a static item must not invite a
+   click, so it opts out of the hover.
+   --------------------------------------------------------------------------- */
+.trip-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.25rem; padding: 0.5rem; border-radius: var(--bb-radius-lg); }
+.trip-item {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  border: none; background: transparent;
+  border-radius: var(--bb-radius-md);
+  text-align: left; cursor: pointer;
+  font-family: var(--bb-font-body);
+  transition: background var(--bb-dur-fast) var(--bb-ease);
+}
+.trip-item:hover { background: var(--bb-bg-subtle); }
+.trip-item--static { cursor: default; }
+.trip-item--static:hover { background: transparent; }
+.trip-icon {
+  width: 34px; height: 34px;
+  border-radius: var(--bb-radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.trip-text { display: flex; flex-direction: column; min-width: 0; }
+.trip-text b {
+  font-size: var(--bb-text-base);
+  font-weight: var(--bb-weight-bold);
+  color: var(--bb-ink);
+  line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.trip-text span {
+  font-size: var(--bb-text-2xs);
+  color: var(--bb-text-tertiary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ---------------------------------------------------------------------------
+   Action cards
+   The icon carries the tint at rest and fills with the brand step on hover, so
+   the row reads as interactive without every card shouting.
+   --------------------------------------------------------------------------- */
+.actions-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.action-card {
+  position: relative;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem;
+  padding: 1.15rem;
+  cursor: pointer;
+  font-family: var(--bb-font-body);
+  text-align: left;
+  color: var(--bb-ink);
+  overflow: hidden;
+  border-radius: var(--bb-radius-lg);
+  box-shadow: var(--bb-shadow-md);
+  transition: all var(--bb-dur-base) var(--bb-ease);
+}
+.action-card:hover { transform: translateY(-3px); box-shadow: var(--bb-shadow-lg); border-color: var(--line-strong); }
+
+/* The card owns its own surface instead of borrowing one from the shared
+   `flat` utility. `flat` and `.action-card` have equal specificity, and
+   tailwind.css is imported after this file, so the utility won on source
+   order and the card fell back to flat's literal #fff in dark mode.
+   Qualifying the selector makes the card authoritative; --bb-surface is
+   declared for both themes, so it still follows the toggle. */
+.action-card.flat { background-color: var(--bb-surface); }
+/* Both icon conventions are covered: the user dashboard renders Lucide
+   components (real <svg>), the owner portal renders Font Awesome (<i>).
+   A selector that only matched one of them left the other with a bare glyph
+   at full body-ink strength, which read as unstyled on a dark card. */
+.action-card > :is(svg, i):first-child {
+  width: 44px; height: 44px; padding: 11px;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: var(--tint);
+  color: var(--bb-text-tertiary);
+  margin-bottom: 0.35rem;
+  transition: all var(--bb-dur-base) var(--bb-ease);
+}
+.action-card:hover > :is(svg, i):first-child { background: var(--eco-mint); color: var(--eco-deepest); }
+.ac-permit > :is(svg, i):first-child { background: var(--bb-warning-soft); color: var(--bb-warning); }
+.ac-map > :is(svg, i):first-child { background: var(--bb-info-soft); color: var(--bb-info); }
+.ac-explore > :is(svg, i):first-child { background: var(--bb-success-soft); color: var(--bb-success); }
+.ac-label { font-size: var(--bb-text-md); font-weight: var(--bb-weight-extrabold); line-height: 1.2; color: var(--bb-ink); }
+.ac-desc { font-size: var(--bb-text-xs); color: var(--bb-text-secondary); line-height: 1.4; }
+.ac-arrow {
+  position: absolute; bottom: 1rem; right: 1rem;
+  color: var(--faint); opacity: 0.6;
+  transition: all var(--bb-dur-fast) var(--bb-ease);
+}
+.action-card:hover .ac-arrow { color: var(--bb-text-tertiary); opacity: 1; transform: translateX(3px); }
+
+/* ---------------------------------------------------------------------------
+   Tip banner
+   A single quiet band, brand-tinted, used for a note the reader should see but
+   not act on urgently.
+   --------------------------------------------------------------------------- */
+.tip-banner {
+  display: flex; align-items: center; gap: 1rem;
+  background: var(--bb-highlight-soft);
+  border: 1px solid var(--bb-highlight);
+  border-radius: var(--bb-radius-lg);
+  padding: 0.9rem 1.1rem;
+  box-shadow: var(--bb-glass-shadow);
+}
+.tip-icon-wrap {
+  width: 44px; height: 44px;
+  border-radius: var(--bb-radius-full);
+  background: var(--eco-mint); color: var(--eco-deepest);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.tip-content { flex: 1; }
+.tip-content h3 {
+  font-family: var(--bb-font-display);
+  font-size: var(--bb-text-md);
+  font-weight: var(--bb-weight-extrabold);
+  color: var(--bb-ink);
+  margin: 0 0 4px;
+}
+.tip-content p { font-size: var(--bb-text-sm); color: var(--bb-text-secondary); margin: 0; line-height: 1.5; }
+.tip-btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--eco-deepest); color: var(--eco-pale);
+  -webkit-text-fill-color: var(--eco-pale);
+  border: none;
+  border-radius: var(--bb-radius-full);
+  padding: 0.55rem 1.1rem;
+  font-family: var(--bb-font-body);
+  font-size: var(--bb-text-xs);
+  font-weight: var(--bb-weight-extrabold);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all var(--bb-dur-fast) var(--bb-ease);
+  box-shadow: var(--bb-shadow-lg);
+}
+.tip-btn:hover { transform: translateY(-1px); box-shadow: var(--bb-shadow-lg); }
+
+/* ---------------------------------------------------------------------------
+   PAGE WRAPPER
+
+   The bleed past the shell's own padding is what makes a dashboard read as a
+   canvas rather than a panel, and the max-width + auto margins on every child
+   is what centres the content columns inside it. Both dashboards use this, so
+   a section in one lands on the same vertical rhythm and the same centre line
+   as a section in the other.
+   --------------------------------------------------------------------------- */
+.dashboard-content {
+  --gut: var(--bb-gutter);
+  margin:
+    calc(-1 * var(--bb-gutter))
+    calc(-1 * var(--gut))
+    -1.5rem;
+  padding: var(--bb-gutter) var(--gut) 1.5rem;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-family: var(--bb-font-body);
+  color: var(--bb-ink);
+  background: linear-gradient(160deg, var(--bb-surface), var(--bb-bg-subtle));
+  animation: fadeInUp 0.5s ease both;
+}
+.dashboard-content > * { max-width: 1440px; width: 100%; margin-inline: auto; }
+
+/* The owner portal names the page wrapper "dashboard" rather than
+   "dashboard-content", so it gets the same treatment under its own name. */
+.dashboard {
+  --gut: var(--bb-gutter);
+  margin:
+    calc(-1 * var(--bb-gutter))
+    calc(-1 * var(--gut))
+    -1.5rem;
+  padding: var(--bb-gutter) var(--gut) 1.5rem;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-family: var(--bb-font-body);
+  color: var(--bb-ink);
+  background: linear-gradient(160deg, var(--bb-surface), var(--bb-bg-subtle));
+  animation: fadeInUp 0.5s ease both;
+}
+.dashboard > * { max-width: 1440px; width: 100%; margin-inline: auto; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   PAGE HEADER
+
+   The user dashboard has no separate page-title block: the hero carries the
+   identity, and a title above it would say the same thing twice. The owner
+   dashboard keeps one for its Export action, so it is restyled to the same
+   type scale and rhythm rather than left on its own older sizing.
+   --------------------------------------------------------------------------- */
+.page-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.page-title h1 {
+  font-family: var(--bb-font-display);
+  font-size: var(--bb-text-2xl);
+  font-weight: var(--bb-weight-extrabold);
+  color: var(--bb-ink);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0;
+}
+.page-title p {
+  font-size: var(--bb-text-sm);
+  color: var(--bb-text-secondary);
+  margin: 4px 0 0;
+}
+.title-actions { display: flex; gap: 0.5rem; }
+
+/* A quiet secondary key. The filled brand pill is reserved for the primary
+   action, so a secondary one stays flat with a hairline. */
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--bb-bg-subtle);
+  color: var(--bb-text-secondary);
+  border: 1px solid var(--bb-border);
+  border-radius: var(--bb-radius-full);
+  padding: 0.55rem 1.1rem;
+  font-family: var(--bb-font-body);
+  font-size: var(--bb-text-xs);
+  font-weight: var(--bb-weight-extrabold);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--bb-dur-fast) var(--bb-ease);
+}
+.btn-secondary:hover:not(:disabled) {
+  color: var(--bb-ink);
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
+}
+.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ---------------------------------------------------------------------------
+   LOADING AND ERROR STATES
+   Flat panels, so a spinner never arrives as a differently-styled box in the
+   middle of a page built from flat panels.
+   --------------------------------------------------------------------------- */
+.state-box {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 1rem; padding: 5rem 1.5rem;
+  color: var(--bb-text-tertiary);
+  background: var(--bb-surface);
+  border: 1px solid var(--bb-border);
+  border-radius: var(--bb-radius-lg);
+  text-align: center;
+}
+.state-box.error { border-color: var(--bb-danger); }
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--bb-border);
+  border-top-color: var(--eco-mint);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------------------------------------------------------------------------
+   LISTING CARD
+
+   The user dashboard's resort card, lifted verbatim so the owner's own
+   listing is presented in exactly the card a traveller sees when browsing.
+   That symmetry is the point: the owner should recognise the surface their
+   property is shown on.
+
+   One difference in use, not in style -- the owner's card is not a navigation
+   target, so its hover affordance comes from the shared card treatment while
+   the actions stay real buttons rather than the whole card being clickable.
+   --------------------------------------------------------------------------- */.hotel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.hotel-card {
+  background: var(--bb-surface);
+  border: 1px solid var(--line);
+  border-radius: var(--bb-radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: var(--bb-shadow-md);
+  transition: all var(--bb-dur-base) var(--bb-ease);
+}
+
+.hotel-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--bb-shadow-lg);
+  border-color: var(--line-strong);
+}
+
+.hc-image {
+  position: relative;
+  aspect-ratio: 16/10;
+  background: var(--bb-bg-subtle);
+  overflow: hidden;
+}
+
+.hc-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s var(--bb-ease);
+}
+
+.hotel-card:hover .hc-image img {
+  transform: scale(1.06);
+}
+
+.hc-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bb-text-tertiary);
+}
+
+.hc-badges {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 6px;
+}
+
+.hc-badge {
+  padding: 4px 10px;
+  border-radius: var(--bb-radius-full);
+  font-size: var(--bb-text-2xs);
+  font-weight: var(--bb-weight-extrabold);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Travelio pill-lime, plus a deep pill for the alternate variant */
+.hc-badge.tour {
+  background: var(--eco-mint);
+  color: var(--bb-on-highlight);
+  -webkit-text-fill-color: var(--bb-on-highlight);
+}
+
+.hc-badge.stay {
+  background: var(--eco-deepest);
+  color: var(--eco-pale);
+  -webkit-text-fill-color: var(--eco-pale);
+}
+
+.hc-body {
+  padding: 1rem 1.15rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.hc-name {
+  font-family: var(--bb-font-display);
+  font-size: var(--bb-text-lg);
+  font-weight: var(--bb-weight-bold);
+  color: var(--bb-ink);
+  margin: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.hc-location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--bb-text-xs);
+  color: var(--bb-text-secondary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hc-meta {
+  display: flex;
+  gap: 12px;
+  font-size: var(--bb-text-2xs);
+  color: var(--bb-text-secondary);
+  margin: 0.2rem 0 0;
+}
+
+.hc-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hc-footer {
+  margin-top: 0.65rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--bb-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hc-price { display: flex; align-items: baseline; gap: 4px; }
+
+.price-val {
+  font-family: var(--bb-font-display);
+  font-size: var(--bb-text-lg);
+  font-weight: var(--bb-weight-extrabold);
+  color: var(--bb-ink);
+}
+
+.price-label {
+  font-size: var(--bb-text-2xs);
+  color: var(--bb-text-secondary);
+}
+
+.hc-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--eco-mint);
+  color: var(--bb-on-highlight);
+  -webkit-text-fill-color: var(--bb-on-highlight);
+  border-radius: var(--bb-radius-full);
+  padding: 0.35rem 0.85rem;
+  font-size: var(--bb-text-xs);
+  font-weight: var(--bb-weight-extrabold);
+  box-shadow: var(--mint-shadow);
+  transition: transform var(--bb-dur-fast) var(--bb-ease);
+}
+
+.hotel-card:hover .hc-view-btn {
+  transform: translateY(-1px);
+}
+
+/* ═══════════ UPCOMING STAYS ═══════════ */
+
+/* ---------------------------------------------------------------------------
+   Responsive -- the grid columns collapse at the same breakpoints the user
+   dashboard uses, so the two pages reflow identically.
+   --------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .actions-grid { grid-template-columns: repeat(2, 1fr); }
+  .trip-strip { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .actions-grid { grid-template-columns: 1fr; }
+  .trip-strip { grid-template-columns: 1fr; }
+  .section-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  .section-title { font-size: var(--bb-text-xl); }
+  .tip-banner { flex-direction: column; align-items: flex-start; }
+  .tip-btn { width: 100%; justify-content: center; }
+}

@@ -1,0 +1,359 @@
+/* ============================================================================
+   Tailwind <-> token bridge
+   ----------------------------------------------------------------------------
+    Exposes the --eco-* token values (defined in UserLayout.vue) as real
+    Tailwind utilities, so `text-eco-deep`, `bg-eco-mint`, `border-eco-sage`
+    resolve to the same colours as var(--eco-deep). One source of truth:
+    change a token, both the hand-written CSS and every utility class follow.
+
+   ============================================================================ */
+
+@theme {
+  /* Eco ramp — static brand colours, identical in both themes.
+     Values mirror the --eco-* tokens in UserLayout.vue. */
+  --color-eco-deepest: #101c16;
+  --color-eco-deep: #101c16;
+  --color-eco-forest: #516308;
+  --color-eco-moss: #046a78;
+  --color-eco-sage: #6b5433;
+  --color-eco-mint: #b0d91e;
+  --color-eco-pale: #f4f8e3;
+  --color-eco-true: #516308;
+  --color-eco-true-light: #9cbe15;
+
+  /* Supporting neutrals */
+  --color-eco-canvas: #f9f9fb;
+  --color-eco-sand: #f2f3f7;
+  --color-eco-sand-2: #edeff4;
+  --color-eco-line: #e4e6ed;
+  --color-eco-stone: #3f5449;
+  --color-eco-stone-2: #6b5433;
+  --color-eco-fog: #6b5433;
+  --color-eco-sun: #7a5300;
+  --color-eco-info: #046a78;
+  --color-eco-danger: #c70505;
+
+  /* Type */
+  --font-display: "Plus Jakarta Sans", "Inter", sans-serif;
+  --font-body: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Radii - mirror of --bb-radius-* in UserLayout.vue */
+  --radius-eco-sm: 8px;
+  --radius-eco-md: 10px;
+  --radius-eco-lg: 12px;
+  --radius-eco-xl: 16px;
+
+  /* ══════════════════════════════════════════════════════════════
+     BRAND SCALE — the five colours, as Tailwind colour tokens.
+
+     Each brand hue ships in FOUR steps, because the vivid value cannot be
+     used as type on the light canvas (1.56–4.37:1). This mirrors the
+     --bb-* tokens in UserLayout.vue; the utility names and the tokens
+     stay in step:
+       <hue>        vivid fill      use as a background
+       <hue>-ink    deep variant    use as text or a border on light
+       <hue>-soft   pale tint       chip / badge background
+       (dark mode inverts the roles in UserLayout.vue)
+     ══════════════════════════════════════════════════════════════ */
+  --color-lime: #b0d91e;
+  --color-lime-ink: #516308;
+  --color-lime-soft: #f4f8e3;
+  --color-lime-hi: #9cbe15;
+
+  --color-cyan: #07dbf2;
+  --color-cyan-ink: #046a78;
+  --color-cyan-soft: #e4f9fc;
+  --color-cyan-hi: #05b9cd;
+
+  --color-amber: #f2b807;
+  --color-amber-ink: #7a5300;
+  --color-amber-soft: #fef6e0;
+  --color-amber-hi: #d9a306;
+
+  --color-tan: #d9b384;
+  --color-tan-ink: #6b5433;
+  --color-tan-soft: #f8f2ea;
+
+  --color-red: #f20707;
+  --color-red-ink: #c70505;
+  --color-red-soft: #fdebeb;
+  --color-red-solid: #ec0606;   /* only step that carries white text */
+
+  /* Canvas + ink, so a card needs no hand-written rule */
+  --color-canvas: #f9f9fb;
+  --color-well: #f2f3f7;
+  --color-ink: #182720;
+  --color-ink-2: #3f5449;
+  --color-ink-3: #626f58;
+  --color-hairline: rgb(21 23 35 / 0.10);
+
+  /* ══════════════════════════════════════════════════════════════
+     SKEUOMORPHISM — subtle moulded plastic.
+
+     A moulded key is described by four things, not one: a bright
+     specular along the TOP edge, a shade along the BOTTOM, a soft cast
+     shadow below it, and a near-white vertical gradient across the face.
+     Dropping any one of the four stops it reading as physical.
+
+     Depth is deliberately restrained. Values are kept under 0.16 alpha
+     so the effect survives on a white canvas without turning to mud, and
+     so text laid over a raised control still measures 4.5:1.
+     ══════════════════════════════════════════════════════════════ */
+  --shadow-skeuo:
+    /* top specular  */ inset 0 1px 0 0 rgb(255 255 255 / 0.95),
+    /* bottom shade  */ inset 0 -1px 0 0 rgb(21 23 35 / 0.06),
+    /* contact       */ 0 1px 2px 0 rgb(21 23 35 / 0.10),
+    /* cast          */ 0 6px 14px -6px rgb(21 23 35 / 0.14);
+  --shadow-skeuo-sm:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.9),
+    inset 0 -1px 0 0 rgb(21 23 35 / 0.05),
+    0 1px 2px 0 rgb(21 23 35 / 0.08);
+  /* Pressed: the specular collapses and the contact shadow moves inside,
+     which is what sells "this key is down" rather than "this key moved". */
+  --shadow-skeuo-pressed:
+    inset 0 2px 4px 0 rgb(21 23 35 / 0.14),
+    inset 0 -1px 0 0 rgb(255 255 255 / 0.7);
+
+  /* The moulded face. Two stops only — a third reads as gloss plastic. */
+  --gradient-skeuo-face: linear-gradient(180deg, #ffffff 0%, #f6f7f4 100%);
+  --gradient-skeuo-face-hi: linear-gradient(180deg, #ffffff 0%, #eef0ea 100%);
+
+  /* ══════════════════════════════════════════════════════════════
+     GLASS — floating chrome only.
+
+     The edge is a dark hairline, not white. A white border is invisible
+     on a light surface, so a white-glass panel sitting on a white card
+     has no boundary at all and reads as nothing. Glassmorphism on a light
+     UI has to be described by a hairline plus a cast shadow; the
+     translucency is the effect, not the outline.
+     ══════════════════════════════════════════════════════════════ */
+  --color-glass: rgb(255 255 255 / 0.72);
+  --color-glass-strong: rgb(255 255 255 / 0.88);
+  --color-glass-edge: rgb(21 23 35 / 0.10);
+  --shadow-glass: 0 1px 2px rgb(21 23 35 / 0.05), 0 8px 24px -12px rgb(21 23 35 / 0.16);
+  --shadow-glass-lg: 0 2px 4px rgb(21 23 35 / 0.05), 0 20px 48px -20px rgb(21 23 35 / 0.20);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   THE THREE-LAYER RULE
+
+   pressable  -> skeuomorphic   (moulded)
+   floating   -> glass
+   otherwise  -> minimal flat
+
+   Each technique therefore has exactly one job. These utilities exist so
+   that rule can be applied in markup instead of re-derived per component.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Moulded control. Pair with `active:` for the pressed state. */
+@utility skeuo {
+  background-image: var(--gradient-skeuo-face);
+  box-shadow: var(--shadow-skeuo);
+  border: 1px solid rgb(21 23 35 / 0.06);
+}
+@utility skeuo-sm {
+  background-image: var(--gradient-skeuo-face);
+  box-shadow: var(--shadow-skeuo-sm);
+  border: 1px solid rgb(21 23 35 / 0.05);
+}
+@utility skeuo-well {
+  background-color: var(--color-well);
+  box-shadow: inset 0 2px 4px rgb(21 23 35 / 0.08),
+    inset 0 -1px 0 0 var(--material-well-hi, rgb(255 255 255 / 0.8));
+}
+
+/* Floating chrome. Needs something behind it to blur — the ambience
+   layer or an image. Never use on content that scrolls with the page. */
+@utility glass {
+  background-color: var(--color-glass);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--color-glass-edge);
+  box-shadow: var(--shadow-glass);
+}
+@utility glass-strong {
+  background-color: var(--color-glass-strong);
+  backdrop-filter: blur(30px) saturate(160%);
+  -webkit-backdrop-filter: blur(30px) saturate(160%);
+  border: 1px solid var(--color-glass-edge);
+  box-shadow: var(--shadow-glass-lg);
+}
+
+/* Minimal flat panel — the default for content. */
+@utility flat {
+  background-color: var(--material-flat-bg, #fff);
+  border: 1px solid var(--color-hairline);
+  box-shadow: 0 1px 2px rgb(21 23 35 / 0.05);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PHOTOGRAPHY — the travel layer.
+
+   A travel interface is carried by imagery, so the image itself is a
+   first-class surface rather than a thumbnail inside a card. These
+   utilities treat a photo as a panel: it bleeds, it carries a caption,
+   and the text on it is guaranteed legible by a gradient scrim rather
+   than by luck.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Full-bleed photographic surface with a scrim that guarantees caption
+   contrast. The scrim runs dark at the bottom where the text sits, so
+   the same gradient works over a bright sky or a dark forest. */
+@utility photo-hero {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-well);
+}
+@utility photo-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* A touch of zoom on hover keeps a still image from feeling dead. */
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@utility photo-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgb(10 14 12 / 0.82) 0%,
+    rgb(10 14 12 / 0.45) 38%,
+    rgb(10 14 12 / 0.12) 68%,
+    rgb(10 14 12 / 0.04) 100%
+  );
+
+  /* On a phone the hero is tall and narrow, so a scrim tuned for a wide
+     panel swallows the photograph: the dark band ends up covering most of
+     what is left after the image is cropped. Below 640px the top half of
+     the gradient is pulled to nearly nothing, so the image is the subject
+     and the scrim only does its job where the caption sits.
+
+     The bottom stop stays strong on purpose. Over a light photo, white
+     text needs the scrim near 0.8 to clear 4.5:1, and even 0.5 only
+     reaches 4.38:1. So the caption must remain inside the lower third,
+     and these stops are positioned to keep it there. */
+  @media (max-width: 640px) {
+    background: linear-gradient(
+      to top,
+      rgb(10 14 12 / 0.8) 0%,
+      rgb(10 14 12 / 0.55) 34%,
+      rgb(10 14 12 / 0.14) 56%,
+      rgb(10 14 12 / 0) 72%
+    );
+  }
+}
+@utility photo-caption {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+}
+
+/* Editorial card: photo on top, minimal flat caption below. */
+@utility photo-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--material-card-bg, #fff);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--bb-radius-lg, 12px);
+  box-shadow: 0 1px 2px rgb(21 23 35 / 0.05);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@utility photo-frame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background-color: var(--color-well);
+}
+@utility photo-frame-wide {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  background-color: var(--color-well);
+}
+
+/* Place the eyebrow/label used on top of photography. */
+@utility photo-eyebrow {
+  font-size: var(--bb-text-2xs, 0.6875rem);
+  font-weight: var(--bb-weight-bold, 700);
+  letter-spacing: var(--bb-track-wide, 0.08em);
+  text-transform: uppercase;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DARK MODE FOR THE MATERIAL LAYER
+
+   The tokens in the @theme block above are static and light-biased, because
+   they were written against the light canvas. That left the utilities unable
+   to respond to dark mode at all:
+
+     flat          background-color: #fff        pure white card on black
+     skeuo         face #ffffff -> #f6f7f4      white keys on black
+     photo-card    background-color: #fff        white card
+     skeuo-well    rgb(255 255 255 / 0.8)        highlight on the wrong side
+     --color-glass rgb(255 255 255 / 0.72)       white glass on black
+     --color-hairline rgb(21 23 35 / 0.10)       INVISIBLE on black
+     --shadow-skeuo  rgb(21 23 35 / ...)         shadows vanish on black
+
+   Re-declaring them under the dark selector is the fix. Overriding a token is
+   enough -- the utilities read it, so nothing needs rewriting per component.
+
+   WHAT CHANGES PHYSICALLY, AND WHY IT IS NOT JUST INVERSION
+
+   Skeuomorphism on a near-black canvas cannot be the light recipe with the
+   colours flipped. The white top specular is what sells a moulded edge on a
+   light surface; on black the same 0.95 white reads as haze or a rendering
+   artefact. So the dark variant runs the specular at 0.07, the face lighter
+   than its surroundings rather than white, and lets the cast shadow carry the
+   depth on its own.
+
+   Glass inverts outright: a white 72% fill over a dark canvas is not glass,
+   it is a light box. The dark fill is a dark translucent one, and the edge
+   hairline flips from dark-on-light to light-on-dark for the same reason --
+   a dark hairline is invisible against black.
+   ══════════════════════════════════════════════════════════════════════════ */
+:root[data-theme='dark'] {
+  /* Surfaces. --color-canvas and --color-well are re-declared by the user
+     portal's own dark tokens; these are the material-facing pair. */
+  --color-glass: rgb(28 34 30 / 0.72);
+  --color-glass-strong: rgb(24 30 26 / 0.88);
+  --color-glass-edge: rgb(240 246 242 / 0.12);
+  --shadow-glass: 0 1px 2px rgb(0 0 0 / 0.45), 0 8px 24px -12px rgb(0 0 0 / 0.65);
+  --shadow-glass-lg: 0 2px 4px rgb(0 0 0 / 0.45), 0 20px 48px -20px rgb(0 0 0 / 0.75);
+
+  /* A dark hairline is invisible against black, so it becomes a light one. */
+  --color-hairline: rgb(240 246 242 / 0.12);
+
+  /* Moulded face: lighter than the surroundings, lit from above, never white. */
+  --gradient-skeuo-face: linear-gradient(180deg, #232a26 0%, #191f1b 100%);
+  --gradient-skeuo-face-hi: linear-gradient(180deg, #2b332e 0%, #1d2420 100%);
+
+  --shadow-skeuo:
+    /* specular, far dimmer than light mode or it reads as fog */
+    inset 0 1px 0 0 rgb(255 255 255 / 0.07),
+    /* bottom shade stays strong: there is no bounce light down there */
+    inset 0 -1px 0 0 rgb(0 0 0 / 0.55),
+    0 1px 2px 0 rgb(0 0 0 / 0.40),
+    0 6px 14px -6px rgb(0 0 0 / 0.55);
+
+  --shadow-skeuo-sm:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.06),
+    inset 0 -1px 0 0 rgb(0 0 0 / 0.45),
+    0 1px 2px 0 rgb(0 0 0 / 0.35);
+
+  --shadow-skeuo-pressed:
+    inset 0 2px 5px 0 rgb(0 0 0 / 0.65),
+    inset 0 -1px 0 0 rgb(255 255 255 / 0.05);
+
+  /* The utilities that could not be fixed by token alone, because they hold a
+     literal colour rather than reading one. Declared here so the dark theme
+     wins on order without each utility needing a variant. */
+  --material-flat-bg: #131815;
+  --material-card-bg: #131815;
+  --material-well-hi: rgb(255 255 255 / 0.05);
+}

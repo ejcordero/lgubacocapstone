@@ -1,0 +1,197 @@
+/* ============================================================================
+   MHO ADMIN — SELF-CONTAINED TOKEN + SHELL LAYER
+   ----------------------------------------------------------------------------
+   WHY THIS FILE EXISTS SEPARATELY
+
+   The native admin area (../style/*.css) hangs every one of its tokens off
+   `.admin-layout` and `[data-admin-theme]`. This console is NOT inside
+   `.admin-layout` — it is its own route root (`/mho-admin`) with its own root
+   class — so it inherits none of those. Rather than reach back into the native
+   sheet, this module declares everything it needs, scoped to `.mho-admin`.
+
+   Consequences that are deliberate, not accidents:
+
+     1. Nothing here can move the native admin. The selectors only ever match
+        inside `.mho-admin`, which the native area never renders.
+     2. Nothing from the native area can move this. `--mho-*` is a private
+        vocabulary; the shared `--bg` / `--fg` / `--card` names are NOT read
+        here, because those are defined on `:root` in ../../styles/theme.css
+        and follow the *public* `data-theme`, which is a different switch from
+        the admin's `data-admin-theme`. Mixing the two is how a console ends up
+        light-on-light.
+
+   CASCADE CONSTRAINT (carried over from the native admin's own notes)
+
+   Tailwind utilities live in `@layer utilities`, which lose to unlayered Vue
+   scoped CSS regardless of specificity. So the layout classes below are plain
+   unlayered CSS and components style themselves with scoped rules. Do not try
+   to override these from a scoped block — change the token instead.
+
+   ACCESSIBILITY
+
+   Every fill that carries white text here is `--mho-accent-solid` #1d6f4a,
+   which clears 4.5:1 on white text (5.02:1). The brighter --mho-accent is
+   reserved for focus rings, icons and tinted washes, where 3:1 is the correct
+   threshold.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   TOKENS — aliased onto the native admin's own material layer
+   ---------------------------------------------------------------------------
+   The console root carries BOTH `.mho-admin` and `.admin-layout` (see
+   MhoLayout.vue), so every `--m-*` token defined in ../style/material.css and
+   every `mat-*` utility resolves here. This console therefore inherits the
+   admin's exact look — same glass, same moulded keys, same dark/light switch —
+   and the block below only renames those tokens to a private vocabulary.
+
+   Why rename at all: so a page here can never accidentally reach for an admin
+   token that a future admin redesign removes, and so nothing here can be read
+   as "this is how the admin styles things".
+
+   Colour is NOT re-themed. MHO stays navy like the admin; the green the first
+   pass used is dropped so the two consoles are visually one product.           */
+.mho-admin {
+  --mho-accent: var(--ac);
+  --mho-accent-solid: var(--m-accent-solid);
+  --mho-accent-soft: var(--acs);
+  --mho-accent-ring: var(--acg);
+
+  --mho-bg: var(--bg);
+  --mho-bg-raised: var(--bg2);
+  --mho-surface: var(--card-solid);
+  --mho-surface-2: var(--card2);
+  --mho-surface-3: var(--card3);
+
+  --mho-fg: var(--fg);
+  --mho-fg-2: var(--fg2);
+  --mho-muted: var(--mt);
+  --mho-muted-2: var(--mt2);
+
+  --mho-border: var(--bdr);
+  --mho-border-2: var(--bdr2);
+  --mho-border-3: var(--bdr3);
+
+  --mho-ok: var(--ok);
+  --mho-ok-soft: var(--oks);
+  --mho-warn: var(--wn);
+  --mho-warn-soft: var(--wns);
+  --mho-danger: var(--dg);
+  --mho-danger-soft: var(--dgs);
+  --mho-info: var(--tl);
+  --mho-info-soft: var(--tls);
+
+  --mho-glass: var(--m-glass);
+  --mho-glass-strong: var(--m-glass-strong);
+  --mho-glass-edge: var(--m-glass-edge);
+  --mho-glass-shadow: var(--m-glass-shadow);
+
+  --mho-key-face: var(--m-skeuo-face);
+  --mho-key-shadow: var(--m-skeuo-shadow);
+  --mho-key-pressed: var(--m-skeuo-pressed);
+  --mho-well-shadow: var(--m-well-shadow);
+
+  --mho-radius-sm: var(--r-sm);
+  --mho-radius: var(--r-md);
+  --mho-radius-lg: var(--r-lg);
+
+  --mho-font: var(--font-body);
+  --mho-mono: var(--font-mono);
+
+  --mho-ease: var(--ease);
+
+  --mho-ambience: var(--m-ambience);
+}
+
+/* ---------------------------------------------------------------------------
+   LAYOUT SHELL
+   --------------------------------------------------------------------------- */
+.mho-admin {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--mho-bg);
+  background-image: var(--mho-ambience);
+  background-attachment: fixed;
+  color: var(--mho-fg);
+  font-family: var(--mho-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+.mho-admin__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.mho-admin__workspace {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 26px 28px 40px;
+}
+
+.mho-admin__page {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Scoped scrollbars, kept inside this console's root so the public pages'
+   scrollbars are untouched. */
+.mho-admin ::-webkit-scrollbar { width: 6px; height: 6px; }
+.mho-admin ::-webkit-scrollbar-track { background: transparent; }
+.mho-admin ::-webkit-scrollbar-thumb { background: var(--mho-border-2); border-radius: 3px; }
+.mho-admin ::-webkit-scrollbar-thumb:hover { background: var(--mho-border-3); }
+
+/* ---------------------------------------------------------------------------
+   PAGE HEADER
+   --------------------------------------------------------------------------- */
+.mho-admin__title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.mho-admin__subtitle {
+  font-size: 0.87rem;
+  color: var(--mho-muted);
+  margin: 4px 0 0;
+}
+
+/* ---------------------------------------------------------------------------
+   ACCESSIBILITY — focus is never removed, only restyled
+   --------------------------------------------------------------------------- */
+.mho-admin :focus-visible {
+  outline: 2px solid var(--mho-accent);
+  outline-offset: 2px;
+  border-radius: var(--mho-radius-sm);
+}
+
+.mho-admin ::selection {
+  background: var(--mho-accent-ring);
+  color: var(--mho-fg);
+}
+
+/* ---------------------------------------------------------------------------
+   REDUCED MOTION
+   The console is dense and animated; honour the OS opt-out globally here
+   rather than remembering it in every component.
+   --------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .mho-admin *,
+  .mho-admin *::before,
+  .mho-admin *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

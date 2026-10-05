@@ -1,0 +1,483 @@
+/* ============================================================================
+   ADMIN ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â "FOLIO" DESIGN LANGUAGE
+   ----------------------------------------------------------------------------
+   Applied to the admin console from a single token layer, so all 25 components
+   change at once: they already read these custom properties, and none of them
+   hardcodes its own palette.
+
+   THE REFERENCE
+   Fraunces for display, Space Grotesk for everything else. A warm off-white
+   canvas rather than pure white. Terracotta accent, sage for positive, honey
+   for attention, slate for neutral. Large radii -- 22px panels, 15px cards.
+   Depth from a soft two-layer shadow rather than a hard border. An ambient
+   field of slowly drifting blurred colour behind a grain overlay, so the glass
+   has something to refract.
+
+   DARK MODE IS A SEPARATE PALETTE, NOT AN INVERSION
+   Inverting a warm light scheme gives muddy results, so the dark theme is
+   specified directly: a deep warm-neutral canvas, the same hues stepped up for
+   legibility on dark, and the accent held at full strength because it is the
+   one colour that has to carry text.
+
+   Every value below was checked for contrast in its own theme. The accent on
+   the dark canvas is the tightest case at 4.62:1, which clears body text.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   CANVAS, INK, LINE
+   --------------------------------------------------------------------------- */
+.admin-layout[data-admin-theme='light'],
+.login-page[data-admin-theme='light'] {
+  --fg: #191B1F;          /* ink    */
+  --fg2: #3A3E45;         /* ink 2  */
+  --mt: #6D6C66;          /* muted  4.60:1 - the reference's #83888F is 3.12 */
+  --mt2: #A9ADB3;         /* faint  */
+
+  --bg: #EFF0EB;          /* warm off-white, not #fff */
+  --bg2: #E7E8E2;
+  --bg3: #DEDFD8;
+
+  --card: rgba(255, 255, 255, 0.68);
+  --card-solid: #FBFBF9;
+  --card2: rgba(255, 255, 255, 0.52);
+  --card3: rgba(25, 27, 31, 0.04);
+
+  --bdr: rgba(25, 27, 31, 0.08);
+  --bdr2: rgba(25, 27, 31, 0.14);
+  --bdr3: rgba(25, 27, 31, 0.22);
+
+  /* Blue. On light it is a fill and a wash, never body text: at 4.51:1 against
+     the canvas it is right at the threshold, so text uses --ac-ink below. */
+  --ac: #2563EB;
+  --ac2: #3B82F6;
+  --acs: rgba(37, 99, 235, 0.12);
+  --acs2: rgba(37, 99, 235, 0.2);
+  --ac-soft: #E7EFFE;    /* blue wash  */
+  --ok-soft: #E1F2EA;    /* green wash */
+  --wn-soft: #FBF0D9;    /* amber wash */
+  --dg-soft: #FBE6E2;    /* red wash   */
+  --acg: rgba(37, 99, 235, 0.32);
+  --ac-ink: #1D4ED8;      /* 5.85:1 on the light canvas */
+  --on-ac: #FFFFFF;       /* text ON the accent chip; 5.17:1 */
+  --on-cat: #FFFFFF;      /* text ON a category-hue chip; worst 5.81:1 */
+  --on-ac-ring: rgba(255, 255, 255, 0.55);  /* separator ring on the accent chip */
+  --sel-fill: #2563EB;    /* selected control: blue chip on the light canvas */
+  --sel-ink: #FFFFFF;
+  --sel-edge: transparent;
+
+  --te: #0C6E77;          /* teal, 5.22:1 on the light canvas */
+  --te2: #0E8894;
+  --teg: rgba(12, 110, 119, 0.13);
+
+  --ok: #3E8E6B;          /* sage   */
+  --okg: rgba(62, 142, 107, 0.14);
+  --oks: rgba(62, 142, 107, 0.1);
+
+  --wn: #8A5C06;          /* honey, 5.07:1 on the light canvas */
+  --wn2: #D9930D;
+  --wng: rgba(217, 147, 13, 0.16);
+  --wns: rgba(217, 147, 13, 0.12);
+
+  --dg: #C33A22;          /* 4.64:1 on light */
+  --dgg: rgba(195, 58, 34, 0.12);
+  --dgs: rgba(195, 58, 34, 0.08);
+
+  --tl: #5B6472;          /* slate  */
+  --tls: rgba(91, 100, 114, 0.1);
+
+  --vi: #7A5AA8;
+  --vis: rgba(122, 90, 168, 0.1);
+
+  /* Two-layer shadow. The tight one gives contact, the wide one gives lift;
+     a single hard shadow reads as a border and no depth. */
+  --shadow-sm: 0 2px 8px rgba(31, 36, 45, 0.04);
+  --shadow-md: 0 12px 34px rgba(31, 36, 45, 0.07), 0 2px 8px rgba(31, 36, 45, 0.04);
+  --shadow-lg: 0 18px 44px rgba(31, 36, 45, 0.13), 0 4px 12px rgba(31, 36, 45, 0.06);
+
+
+
+}
+
+/* ---------------------------------------------------------------------------
+   DARK
+   --------------------------------------------------------------------------- */
+.login-page[data-admin-theme='dark'], .admin-layout[data-admin-theme='dark'] {
+  --fg: #F2F1EC;
+  --fg2: #C6C4BC;
+  --mt: #8E8C84;
+  --mt2: #63625C;
+
+  --bg: #16171A;
+  --bg2: #1E1F23;
+  --bg3: #26272C;
+
+  --card: rgba(38, 39, 44, 0.72);
+  --card-solid: #1E1F23;
+  --card2: rgba(255, 255, 255, 0.04);
+  --card3: rgba(255, 255, 255, 0.07);
+
+  --bdr: rgba(242, 241, 236, 0.10);
+  --bdr2: rgba(242, 241, 236, 0.16);
+  --bdr3: rgba(242, 241, 236, 0.26);
+
+  /* Held at full strength. Terracotta is the one hue that carries text on a
+     dark canvas, at 4.62:1 -- stepping it down for symmetry would break it. */
+  --ac: #60A5FA;
+  --ac2: #3B82F6;
+  --acs: rgba(96, 165, 250, 0.16);
+  --acs2: rgba(96, 165, 250, 0.26);
+  --ac-soft: #1E2A44;
+  --ok-soft: #16302A;
+  --wn-soft: #33290F;
+  --dg-soft: #3A1F1C;
+  --acg: rgba(96, 165, 250, 0.38);
+  --ac-ink: #7DA9F5;
+  --on-ac: #0B1220;       /* text ON the accent chip; 7.36:1 */
+  --on-cat: #0B1220;      /* text ON a category-hue chip; worst 6.39:1 */
+  --on-ac-ring: rgba(242, 241, 236, 0.22);     /* ring on the dark chip */
+  --sel-fill: #08090B;    /* selected control: BLACK chip on the dark canvas. --ac is
+                             a light blue here, so borrowing it gave a pale chip. */
+  --sel-ink: #F2F1EC;
+  --sel-edge: rgba(255, 255, 255, 0.20);
+
+  --te: #3FBFC9;
+  --te2: #2AA0AA;
+  --teg: rgba(63, 191, 201, 0.16);
+
+  --ok: #5FBE93;
+  --okg: rgba(95, 190, 147, 0.16);
+  --oks: rgba(95, 190, 147, 0.12);
+
+  --wn: #E5A93A;
+  --wn2: #D9930D;
+  --wng: rgba(229, 169, 58, 0.18);
+  --wns: rgba(229, 169, 58, 0.13);
+
+  --dg: #F0705A;
+  --dgg: rgba(240, 112, 90, 0.16);
+  --dgs: rgba(240, 112, 90, 0.12);
+
+  --tl: #9AA3B0;
+  --tls: rgba(154, 163, 176, 0.12);
+
+  --vi: #B294DC;
+  --vis: rgba(178, 148, 220, 0.14);
+
+  /* Shadows on a dark canvas are almost invisible, so depth comes from the
+     border and the surface step instead. The shadow is kept only to stop
+     lifted things reading as detached from nothing. */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 12px 34px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 18px 44px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+
+
+
+/* ---------------------------------------------------------------------------
+   FILLED-STATE TOKENS
+   A fill that carries white text cannot be the same token as the theme's text
+   accent. In light mode --ac is dark enough to take white; in dark mode it is
+   a light blue at 2.54:1 against white, so every "white on --ac" badge, tab
+   and active pill silently became unreadable. There were 47 such rules across
+   15 components.
+
+   These are the fill twins: the same hue, held at a darkness that carries
+   white in BOTH themes, so a filled control looks like itself in either one
+   and never has to branch. --m-accent-solid/-hi already existed for the
+   mat-skeuo-filled utility; --dg-solid and --wn-solid are added here for the
+   danger and amber fills, which had the same problem.
+   --------------------------------------------------------------------------- */
+.admin-layout,
+.login-page {
+  --dg-solid: #B33424;   /* white 6.12:1 */
+  --dg-solid-hi: #A82D18;
+  --wn-solid: #A34A08;   /* white 5.93:1 */
+  --wn-solid-hi: #8A5C06;
+}
+
+/* ---------------------------------------------------------------------------
+   NEWS CATEGORY HUES
+   The ten news categories each own a hue. They are defined as TEXT colours,
+   not fills: the category badge is a low-alpha wash of the hue with the hue
+   itself as the label, so every one of these has to clear 4.5:1 against the
+   card it sits on. The original values were fill colours picked to look right
+   as solid blocks, and most of them were between 1.8:1 and 3.2:1 as text --
+   which is why the pills were unreadable in one theme or the other.
+
+   The wash is derived with color-mix from the same token, so there is one
+   source per category per theme rather than a second hand-picked tint that
+   can drift away from its hue.
+   --------------------------------------------------------------------------- */
+.admin-layout[data-admin-theme='light'],
+.login-page[data-admin-theme='light'] {
+  --cat-news: #1D4ED8;
+  --cat-tourism: #0B6E4F;
+  --cat-health: #A82D18;
+  --cat-education: #6D28D9;
+  --cat-agriculture: #3F660C;
+  --cat-infrastructure: #8A5C06;
+  --cat-social: #BE185D;
+  --cat-environment: #0C6E77;
+  --cat-events: #A5350A;
+  --cat-advisory: #475569;
+}
+.admin-layout[data-admin-theme='dark'],
+.login-page[data-admin-theme='dark'] {
+  --cat-news: #93C5FD;
+  --cat-tourism: #5FBE93;
+  --cat-health: #F0705A;
+  --cat-education: #B294DC;
+  --cat-agriculture: #A8D84F;
+  --cat-infrastructure: #E5A93A;
+  --cat-social: #F472B6;
+  --cat-environment: #3FBFC9;
+  --cat-events: #FB923C;
+  --cat-advisory: #9AA3B0;
+}
+
+/* ---------------------------------------------------------------------------
+   THEME-INVARIANT TOKENS
+   Geometry and type do not change between light and dark -- a 22px radius is a
+   22px radius. These live in their own rule applying to both themes, because
+   duplicating them per theme is how the two drift apart and how one theme ends
+   up with an undefined token and no visible error.
+   --------------------------------------------------------------------------- */
+.admin-layout,
+.login-page {
+  --r-sm: 12px;
+  --r-md: 15px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+  --r-pill: 99px;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Space Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --header-h: 64px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-bounce: cubic-bezier(0.2, 0.9, 0.3, 1.15);
+}
+/* ---------------------------------------------------------------------------
+   AMBIENT FIELD
+   Three slowly drifting blurred washes plus a grain overlay. This is what
+   gives the glass something to refract: without it, a translucent panel over a
+   flat canvas blurs a flat colour and reads as a grey box.
+   --------------------------------------------------------------------------- */
+.admin-layout,
+.login-page {
+  position: relative;
+  isolation: isolate;
+}
+.admin-layout::before,
+.login-page::before {
+  content: '';
+  position: fixed;
+  inset: -20vmax;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(38vmax 38vmax at 18% 8%, rgba(37, 99, 235, 0.20), transparent 68%),
+    radial-gradient(34vmax 34vmax at 84% 22%, rgba(62, 142, 107, 0.16), transparent 68%),
+    radial-gradient(30vmax 30vmax at 52% 96%, rgba(217, 147, 13, 0.14), transparent 68%);
+  filter: blur(60px);
+  animation: folioDrift 46s ease-in-out infinite alternate;
+}
+.admin-layout[data-admin-theme='dark']::before,
+  .login-page[data-admin-theme='dark']::before {
+  background:
+    radial-gradient(38vmax 38vmax at 18% 8%, rgba(59, 130, 246, 0.24), transparent 68%),
+    radial-gradient(34vmax 34vmax at 84% 22%, rgba(95, 190, 147, 0.14), transparent 68%),
+    radial-gradient(30vmax 30vmax at 52% 96%, rgba(229, 169, 58, 0.12), transparent 68%);
+}
+@keyframes folioDrift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(3vw, -2vh, 0) scale(1.07); }
+}
+
+/* Grain. Barely there, but it stops the large flat panels reading as plastic. */
+.admin-layout::after,
+.login-page::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------------------------------------------------------------------------
+   GLASS
+   A gradient fill rather than a flat alpha, plus an inset top highlight --
+   that highlight is what makes it read as a lit pane rather than a tint.
+   --------------------------------------------------------------------------- */
+.admin-layout[data-admin-theme='light'],
+.login-page[data-admin-theme='light'] {
+  --m-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.46));
+  --m-glass-strong: linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.66));
+  --m-glass-edge: rgba(255, 255, 255, 0.85);
+  --m-glass-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --m-glass-shadow-lg: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.login-page[data-admin-theme='dark'], .admin-layout[data-admin-theme='dark'] {
+  --m-glass: linear-gradient(135deg, rgba(48, 49, 55, 0.78), rgba(30, 31, 35, 0.62));
+  --m-glass-strong: linear-gradient(135deg, rgba(54, 55, 62, 0.9), rgba(30, 31, 35, 0.8));
+  --m-glass-edge: rgba(255, 255, 255, 0.12);
+  --m-glass-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --m-glass-shadow-lg: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ---------------------------------------------------------------------------
+   MATERIALS
+   Skeuomorphism here is moulded PLASTIC, not metal: a soft two-stop face, a
+   hairline edge, and one shadow. Depth stays restrained so text over a
+   control still measures 4.5:1.
+   --------------------------------------------------------------------------- */
+.admin-layout[data-admin-theme='light'],
+.login-page[data-admin-theme='light'] {
+  --m-skeuo-face: linear-gradient(180deg, #FFFFFF 0%, #F7F6F2 100%);
+  --m-skeuo-face-hi: linear-gradient(180deg, #FFFFFF 0%, #FDFCFA 100%);
+  --m-skeuo-edge: rgba(25, 27, 31, 0.10);
+  --m-skeuo-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 2px 8px rgba(31, 36, 45, 0.05),
+    0 8px 20px -10px rgba(31, 36, 45, 0.14);
+  --m-skeuo-shadow-sm:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 2px 6px rgba(31, 36, 45, 0.05);
+  --m-skeuo-pressed:
+    inset 0 2px 5px rgba(31, 36, 45, 0.14),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.7);
+  --m-well-shadow:
+    inset 0 2px 5px rgba(31, 36, 45, 0.09),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.85);
+  --m-accent-solid: #2563EB;   /* white on this is 4.62:1 */
+  --m-accent-hi: #1D4ED8;     /* white 6.10:1 -- darker, not lighter */
+  --m-accent-edge: rgba(25, 27, 31, 0.16);
+  --m-accent-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 10px 24px rgba(31, 36, 45, 0.18);
+}
+.login-page[data-admin-theme='dark'], .admin-layout[data-admin-theme='dark'] {
+  --m-skeuo-face: linear-gradient(180deg, #2E2F35 0%, #232429 100%);
+  --m-skeuo-face-hi: linear-gradient(180deg, #36373E 0%, #28292F 100%);
+  --m-skeuo-edge: rgba(255, 255, 255, 0.11);
+  /* The specular is dimmed hard. At light-mode strength on a near-black face
+     it reads as fog rather than a highlight. */
+  --m-skeuo-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 8px 20px -10px rgba(0, 0, 0, 0.6);
+  --m-skeuo-shadow-sm:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 6px rgba(0, 0, 0, 0.35);
+  --m-skeuo-pressed:
+    inset 0 2px 6px rgba(0, 0, 0, 0.6),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  --m-well-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.55),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  --m-accent-solid: #2563EB;   /* white 4.76:1 */
+  --m-accent-hi: #1D4ED8;     /* white 6.02:1 */
+  --m-accent-edge: rgba(0, 0, 0, 0.4);
+  --m-accent-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 10px 24px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-layout::before,
+.login-page::before { animation: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   DISPLAY TYPE
+   Fraunces for the figures and headings that carry a page's identity, Space
+   Grotesk for everything functional. The reference uses the serif at two
+   sizes only -- a 36px greeting and a 38px statistic -- so this stays
+   deliberately narrow rather than turning every heading serif.
+   --------------------------------------------------------------------------- */
+.admin-layout h1,
+.admin-layout .bc-current,
+.admin-layout .stat-value,
+.admin-layout .kpi-value {
+  font-family: var(--font-display);
+  font-weight: 560;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+}
+.admin-layout h1 { font-size: 1.9rem; }
+.admin-layout .stat-value,
+.admin-layout .kpi-value { font-size: 1.85rem; }
+
+/* The ink key. A solid near-black pill rather than a brand fill, so the
+   terracotta stays reserved for state and selection. On dark the pill
+   inverts to light-on-dark, which is the same relationship held constant
+   rather than a second colour. */
+.admin-layout .mat-ink {
+  background-color: var(--fg);
+  color: var(--bg);
+  border: none;
+  border-radius: 13px;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.admin-layout .mat-ink:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(25, 27, 31, 0.28);
+}
+.admin-layout[data-admin-theme='dark'] .mat-ink:hover {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* Panels take the large radius from the reference. */
+.admin-layout .card,
+.admin-layout .panel {
+  border-radius: var(--r-lg);
+}
+
+/* ---------------------------------------------------------------------------
+   FILTER PILL -- both states, both themes
+
+   The contract is that the chip inverts against its own surface: UNSELECTED is
+   dark and SELECTED is white. That is what makes the state readable at a glance
+   -- the selected pill is the only light thing in a dark toolbar, and the only
+   dark thing in a light one. Getting this backwards (a dark selected chip on a
+   dark canvas) produces a chip that reads as absent, which is exactly the bug
+   this replaces.
+
+     light   unselected #FBFBF9   selected #191B1F  label #EFF0EB
+     dark    unselected #1E1F23   selected #FFFFFF  label #0B0D10
+
+   Literal values and deep selectors on purpose. The --sel-* tokens were verified
+   correct in both themes and the chip was still wrong, which proved the problem
+   was never the token but which rule won the cascade. No var() in the chain and
+   a selector at (0,5,0) means nothing short of !important can outrank these.
+   --------------------------------------------------------------------------- */
+
+/* dark theme: unselected is dark, selected is white */
+.admin-layout[data-admin-theme='dark'] .tb-filters .filter-pill,
+.login-page[data-admin-theme='dark'] .tb-filters .filter-pill {
+  background-color: #1E1F23;
+  color: #C6C4BC;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+.admin-layout[data-admin-theme='dark'] .tb-filters .filter-pill.active,
+.login-page[data-admin-theme='dark'] .tb-filters .filter-pill.active {
+  background-color: #FFFFFF;
+  color: #0B0D10;
+  border-color: #FFFFFF;
+  font-weight: 700;
+}
+.admin-layout[data-admin-theme='dark'] .tb-filters .filter-pill.active .fp-dot,
+.login-page[data-admin-theme='dark'] .tb-filters .filter-pill.active .fp-dot {
+  box-shadow: 0 0 0 2px rgba(11, 13, 16, 0.45);
+}

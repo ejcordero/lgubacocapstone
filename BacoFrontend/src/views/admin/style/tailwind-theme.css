@@ -1,0 +1,179 @@
+/* ============================================================================
+   ADMIN TAILWIND BRIDGE
+   ----------------------------------------------------------------------------
+   The m-* utilities below are the Tailwind expression of the material layer in
+   material.css. Both read the same --m-* custom properties, so a button styled
+   with a utility and a button styled with the hand-written CSS come out
+   identical.
+
+   WHY UTILITIES AND NOT INLINE UTILITY STRINGS
+   A moulded key needs four shadow stops, a two-stop face gradient, an edge
+   and a state pair. Spelled inline per button that is a long class string on
+   every element and the values drift apart the moment one is edited. As a
+   named utility there is one definition to change.
+
+   THE CASCADE CONSTRAINT -- read this before "simplifying" anything
+   Tailwind v4 emits utilities inside @layer utilities. Vue scoped component
+   CSS is UNLAYERED, and in the cascade unlayered styles beat layered ones
+   REGARDLESS OF SPECIFICITY. A scoped `.action-btn { background: ... }` will
+   therefore beat an `mat-skeuo` class on the same element no matter how the
+   utilities are ordered, and no `!important` is needed to reproduce that.
+
+   The consequence is the reason the competing declarations were removed from
+   the component styles rather than merely overridden: for a utility to take
+   effect, the unlayered rule has to not be there.
+
+   Light/dark and the contrast corrections are inherited from material.css
+   rather than duplicated here.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   Pressable. Pair with the ACTIVE state baked in below, so a key is a single
+   class rather than a base plus a remembered :active.
+   --------------------------------------------------------------------------- */
+@utility mat-skeuo {
+  background-image: var(--m-skeuo-face);
+  border: 1px solid var(--m-skeuo-edge);
+  box-shadow: var(--m-skeuo-shadow);
+}
+@utility mat-skeuo-sm {
+  background-image: var(--m-skeuo-face);
+  border: 1px solid var(--m-skeuo-edge);
+  box-shadow: var(--m-skeuo-shadow-sm);
+}
+
+/* Filled key. --m-accent-solid rather than --ac: white on the --ac blue is
+   3.68:1 and fails 4.5:1 for body text; --m-accent-solid is the same hue at
+   4.88:1. */
+@utility mat-skeuo-filled {
+  background-image: linear-gradient(135deg, var(--m-accent-hi), var(--m-accent-solid));
+  border: 1px solid var(--m-accent-edge);
+  box-shadow: var(--m-accent-shadow);
+  color: #fff;
+}
+
+/* Recessed well. For static indicators -- chips, pills, tags -- which are set
+   INTO the surface rather than raised off it, because they are not
+   controls. Using a raised key here would imply something is clickable. */
+@utility mat-well {
+  background-color: var(--bg2);
+  border: 1px solid var(--m-skeuo-edge);
+  box-shadow: var(--m-well-shadow);
+}
+
+/* Floating chrome. Needs something behind it to blur; the admin ambience
+   washes on .admin-layout are what give it structure. */
+@utility mat-glass {
+  background-image: var(--m-glass);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--m-glass-edge);
+  box-shadow: var(--m-glass-shadow);
+}
+@utility mat-glass-strong {
+  background-image: var(--m-glass-strong);
+  backdrop-filter: blur(34px) saturate(165%);
+  -webkit-backdrop-filter: blur(34px) saturate(165%);
+  border: 1px solid var(--m-glass-edge);
+  box-shadow: var(--m-glass-shadow-lg);
+}
+
+/* ---------------------------------------------------------------------------
+   Interaction states
+   Tailwind v4 lets a utility define its own pseudo variants, so the whole
+   pressable behaviour travels with the class. A moulded key is only
+   convincing if it responds: hover brightens the face, press collapses the
+   specular and moves the contact shadow inside.
+   --------------------------------------------------------------------------- */
+@utility mat-pressable {
+  transition: all 0.18s var(--ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  &:hover {
+    background-image: var(--m-skeuo-face-hi);
+  }
+  &:active {
+    box-shadow: var(--m-skeuo-pressed);
+    transform: translateY(0) scale(0.97);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--ac);
+    outline-offset: 2px;
+  }
+}
+@utility mat-pressable-sm {
+  transition: all 0.18s var(--ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  &:hover {
+    background-image: var(--m-skeuo-face-hi);
+  }
+  &:active {
+    box-shadow: var(--m-skeuo-pressed);
+    transform: translateY(0) scale(0.97);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--ac);
+    outline-offset: 2px;
+  }
+}
+/* Filled keys lift rather than just brighten, and do not scale as hard --
+   a wide button scaling 2% reads as a wobble, a small key reads as a press. */
+@utility mat-pressable-filled {
+  transition: all 0.18s var(--ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+  &:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: var(--m-skeuo-pressed);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--ac);
+    outline-offset: 2px;
+  }
+}
+/* Destructive: keeps the danger hue, gains the moulded face. */
+@utility mat-pressable-danger {
+  transition: all 0.18s var(--ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  &:hover {
+    color: var(--dg);
+    border-color: var(--dg);
+  }
+  &:active {
+    box-shadow: var(--m-skeuo-pressed);
+    transform: translateY(0) scale(0.97);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--dg);
+    outline-offset: 2px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Accessibility
+   The utilities above are opt-out where the OS asks. These are the opt-outs.
+   --------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .mat-pressable,
+  .mat-pressable-sm,
+  .mat-pressable-filled,
+  .mat-pressable-danger {
+    transition: none !important;
+  }
+  .mat-pressable:active,
+  .mat-pressable-sm:active,
+  .mat-pressable-filled:active,
+  .mat-pressable-danger:active {
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .mat-glass,
+  .mat-glass-strong {
+    background-color: var(--card-solid);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}

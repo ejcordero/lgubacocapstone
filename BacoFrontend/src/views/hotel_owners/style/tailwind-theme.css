@@ -1,0 +1,246 @@
+/* ============================================================================
+   OWNER PORTAL -- theme bridge
+   ----------------------------------------------------------------------------
+   Brings the hotel-owner area onto the same design system as the user portal:
+   the same five-colour brand scale, the same material vocabulary, the same
+   type scale and radii.
+
+   WHY THIS FILE IS SCOPED RATHER THAN EDITING App.vue's :root
+   The owner, admin and public areas all read --card / --bdr / --ac / --ok and
+   friends from the global :root in App.vue. Editing that block to lime/cyan
+   would be the blunt instrument: it restyles every consumer at once.
+
+   AdminLayout.vue already re-declares 48 of those tokens on its own :root, so
+   admin is insulated either way. Owner is not -- it has no such block, which
+   is why it is the one that drifted. Scoping the override to the owner root
+   fixes that, delivers the palette the brief asked for, and additionally
+   stops AdminLayout's :root from bleeding into owner pages when an admin
+   route was visited earlier in the same SPA session.
+
+   The material utilities (skeuo, glass, photo-*) are defined once, globally,
+   in the user portal's theme.css. They are NOT redefined here. What changes
+   per area is the set of custom properties they read, so the same class names
+   resolve to the right values in each portal. One definition, two themes.
+
+   MATERIALS IN DARK MODE
+   The shared @theme values for glass are light-biased, because they were
+   written for the user portal's light canvas. They are inverted here rather
+   than duplicated, so --color-glass means "glass for this theme" in both
+   portals.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   Surfaces, text and the brand scale.
+   The five hues, each in the same four steps the user portal uses, because a
+   single vivid value cannot be used as type on a light canvas.
+   --------------------------------------------------------------------------- */
+.owner-layout-bg {
+  --color-lime: #b0d91e;
+  --color-lime-ink: #516308;
+  --color-lime-soft: #f4f8e3;
+  --color-lime-hi: #9cbe15;
+
+  --color-cyan: #07dbf2;
+  --color-cyan-ink: #046a78;
+  --color-cyan-soft: #e4f9fc;
+  --color-cyan-hi: #05b9cd;
+
+  --color-amber: #f2b807;
+  --color-amber-ink: #7a5300;
+  --color-amber-soft: #fef6e0;
+  --color-amber-hi: #d9a306;
+
+  --color-tan: #d9b384;
+  --color-tan-ink: #6b5433;
+  --color-tan-soft: #f8f2ea;
+
+  --color-red: #f20707;
+  --color-red-ink: #c70505;
+  --color-red-soft: #fdebeb;
+  /* The only step of the red ramp that legally carries white text. */
+  --color-red-solid: #ec0606;
+
+  --color-canvas: #f9f9fb;
+  --color-well: #f2f3f7;
+  --color-ink: #182720;
+  --color-ink-2: #3f5449;
+  --color-ink-3: #626f58;
+  --color-hairline: rgb(21 23 35 / 0.10);
+}
+
+/* ---------------------------------------------------------------------------
+   The owner portal's existing token NAMES, remapped onto the brand scale.
+   These are the names the existing components already read, so retheming
+   needs no markup changes anywhere. --ac becomes the lime step, --tl the
+   cyan step: the same five colours, addressed by the names this area has
+   always used.
+   --------------------------------------------------------------------------- */
+.owner-layout-bg {
+  --ac: var(--color-lime);
+  --ac2: var(--color-lime-hi);
+  --acs: rgb(176 217 30 / 0.12);
+  --acs2: rgb(176 217 30 / 0.20);
+  --acg: rgb(176 217 30 / 0.35);
+
+  --tl: var(--color-cyan);
+  --tlg: rgb(7 219 242 / 0.18);
+  --tls: rgb(7 219 242 / 0.10);
+
+  --wn: var(--color-amber);
+  --wn2: var(--color-amber-hi);
+  --wng: rgb(242 184 7 / 0.18);
+  --wns: rgb(242 184 7 / 0.12);
+
+  --ok: #0e9f6e;
+  --okg: rgb(14 159 110 / 0.18);
+  --oks: rgb(14 159 110 / 0.10);
+
+  --dg: var(--color-red);
+  --dgg: rgb(242 7 7 / 0.18);
+  --dgs: rgb(242 7 7 / 0.10);
+
+  --vp: #7c5cd6;
+  --vpg: rgb(124 92 214 / 0.18);
+
+  /* Stands in for the old --tan / --rose custom colours so the booking
+     status palette stays as warm as it was. */
+  --tan: var(--color-tan);
+  --tan-ink: var(--color-tan-ink);
+}
+
+/* ---------------------------------------------------------------------------
+   DARK MODE
+   html[data-theme] is what the owner theme toggle sets, matching the existing
+   convention. On a near-black canvas the vivid brand steps are too light to
+   carry text, so the accents step DOWN to their ink variants while the ink
+   tokens step UP -- the same inversion the user portal applies.
+   --------------------------------------------------------------------------- */
+html[data-theme='dark'] .owner-layout-bg {
+  --color-canvas: #0a0f0c;
+  --color-well: #131a16;
+  --color-ink: #f2f6f0;
+  --color-ink-2: #c3cfc0;
+  --color-ink-3: #93a08f;
+  --color-hairline: rgb(242 246 240 / 0.10);
+
+  --fg: #f2f6f0;
+  --fg2: #c3cfc0;
+  --mt: #93a08f;
+  --mt2: #6b7768;
+  --card: #111814;
+  --card2: #16201a;
+  --card3: #1c2820;
+  --bg: #0a0f0c;
+  --bg2: #131a16;
+  --bg3: #1c2820;
+  --bdr: #243028;
+  --bdr2: #33413a;
+  --bdr3: #43534a;
+
+  /* Step the accents down: lime-hi and cyan-hi are the dark-mode text-safe
+     forms of the same two hues. */
+  --ac: var(--color-lime-hi);
+  --ac2: var(--color-lime);
+  --acs: rgb(156 190 21 / 0.16);
+  --acg: rgb(156 190 21 / 0.34);
+
+  --tl: var(--color-cyan-hi);
+  --tlg: rgb(5 185 205 / 0.20);
+
+  --wn: var(--color-amber-hi);
+  --wng: rgb(217 163 6 / 0.20);
+
+  --ok: #34d399;
+  --okg: rgb(52 211 153 / 0.20);
+
+  --dg: #f87171;
+  --dgg: rgb(248 113 113 / 0.20);
+
+  --vp: #a78bfa;
+  --vpg: rgb(167 139 250 / 0.20);
+}
+
+/* ---------------------------------------------------------------------------
+   MATERIAL TOKEN THEMING
+
+   The shared @utility definitions read these. Overriding them per theme is
+   what lets one set of utility classes serve a light portal and a dark one
+   without being duplicated.
+
+   The glass edge is a DARK HAIRLINE, never white. A white border is
+   invisible on a light surface, so a white-glass panel sitting on a light
+   card has no boundary at all and reads as nothing whatsoever.
+   --------------------------------------------------------------------------- */
+.owner-layout-bg {
+  --color-glass: rgb(255 255 255 / 0.70);
+  --color-glass-strong: rgb(255 255 255 / 0.86);
+  --color-glass-edge: rgb(24 39 32 / 0.10);
+  --shadow-glass: 0 1px 2px rgb(24 39 32 / 0.05), 0 8px 24px -12px rgb(24 39 32 / 0.16);
+  --shadow-glass-lg: 0 2px 4px rgb(24 39 32 / 0.05), 0 20px 48px -20px rgb(24 39 32 / 0.20);
+
+  /* The `flat` and `photo-card` utilities read these. The user portal only
+     declares the dark value (inside its own :root[data-theme='dark']), so
+     without a light declaration here every flat surface in this portal
+     resolved to the utility's literal #fff fallback. Declaring both keeps
+     the owner area self-sufficient instead of depending on another
+     portal's dark block to turn its cards dark at all. */
+  --material-flat-bg: #ffffff;
+  --material-card-bg: #ffffff;
+}
+
+html[data-theme='dark'] .owner-layout-bg {
+  --color-glass: rgb(19 26 22 / 0.66);
+  --color-glass-strong: rgb(19 26 22 / 0.86);
+  --color-glass-edge: rgb(242 246 240 / 0.10);
+  --shadow-glass: 0 1px 2px rgb(0 0 0 / 0.40), 0 8px 24px -12px rgb(0 0 0 / 0.60);
+  --shadow-glass-lg: 0 2px 4px rgb(0 0 0 / 0.40), 0 20px 48px -20px rgb(0 0 0 / 0.70);
+
+  /* The flat card fill, on the same near-black as this portal's own --card,
+     so a `flat` panel and a .panel cannot disagree. Without this the value
+     came from the user portal's dark block and the card stayed white. */
+  --material-flat-bg: #111814;
+  --material-card-bg: #111814;
+}
+
+/* ---------------------------------------------------------------------------
+   TYPE AND RADII
+   Mirrored from the user portal so the two read as one product. The --bb-*
+   names are declared here because the user portal sets them in its own layout
+   component, and the material utilities fall back on them.
+   --------------------------------------------------------------------------- */
+.owner-layout-bg {
+  --bb-radius-sm: 8px;
+  --bb-radius-md: 10px;
+  --bb-radius-lg: 12px;
+  --bb-radius-xl: 16px;
+
+  --bb-text-2xs: 0.6875rem;
+  --bb-text-xs: 0.75rem;
+  --bb-text-sm: 0.8125rem;
+  --bb-text-base: 0.875rem;
+  --bb-text-md: 1rem;
+  --bb-text-lg: 1.125rem;
+  --bb-text-xl: 1.375rem;
+  --bb-text-2xl: 1.75rem;
+  --bb-text-3xl: 2.25rem;
+  --bb-text-4xl: 3rem;
+
+  --bb-weight-bold: 700;
+  --bb-weight-extrabold: 800;
+  --bb-track-wide: 0.08em;
+}
+
+/* ---------------------------------------------------------------------------
+   ACCESSIBILITY
+   The owner's own glass surfaces predate the shared utilities, so the
+   prefers-reduced-transparency opt-out is applied to the portal root class
+   as well.
+   --------------------------------------------------------------------------- */
+@media (prefers-reduced-transparency: reduce) {
+  .owner-layout-bg .glass,
+  .owner-layout-bg .glass-strong {
+    background-color: var(--card);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}

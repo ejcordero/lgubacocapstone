@@ -1,0 +1,831 @@
+/* ══════════════════════════════════════════════════════════════════════
+   USER LOGIN / REGISTER  —  src/views/user/UserAuth.vue
+   Design reference: "Basecamp Baco" sign-in.
+
+   ISOLATION CONTRACT
+   Loaded from main.js exactly like views/admin/style/login.css, and every
+   single rule below is prefixed with .ua-root. Nothing here can reach any
+   other page, and nothing on any other page can reach in here. This matters
+   more than usual on this file: AuthView.vue also renders a root element
+   called .auth-container and also uses .brand, .input-wrap, .form-group and
+   .input-icon. Those names were the leak; .ua-root is the wall.
+
+   Every token this page needs is declared on .ua-root below, so the page
+   does not depend on styles/design-tokens-user.css or any other global
+   sheet. If those change, this page does not move.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Fraunces + Space Grotesk are loaded from index.html, not with @import.
+   See the note there on why. */
+
+.ua-root {
+  /* ── palette ─────────────────────────────────────────────────────── */
+  --ua-ink: #0F1410;
+  --ua-ink-2: #2C332E;
+  --ua-mut: #79817B;
+  --ua-faint: #A6ADA7;
+  --ua-line: rgba(15, 20, 16, .09);
+  --ua-line-2: rgba(15, 20, 16, .16);
+
+  --ua-lime: #B5E614;
+  --ua-lime-dark: #8FB90A;
+  --ua-lime-soft: rgba(181, 230, 20, .16);
+  --ua-lime-glow: rgba(181, 230, 20, .40);
+
+  --ua-deep: #0E1A10;
+  --ua-page: #F2F3EE;
+  --ua-card: #FFFFFF;
+  --ua-shadow: 0 14px 40px rgba(15, 20, 16, .10), 0 3px 10px rgba(15, 20, 16, .05);
+  --ua-shadow-lg: 0 30px 80px rgba(15, 20, 16, .16);
+
+  --ua-red: #E23B3B;
+  --ua-red-soft: rgba(226, 59, 59, .10);
+
+  /* Aliases the template's inline styles still reference directly. */
+  --bb-danger: #D24545;
+  --bb-danger-soft: rgba(210, 69, 69, .10);
+
+  --ua-font: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --ua-display: 'Fraunces', Georgia, serif;
+
+  /* Motion. One easing curve and one duration for the whole page, so the
+     panel slide, the steps and the button all decelerate the same way
+     instead of each arriving on its own timing. */
+  --ua-ease: cubic-bezier(.22, 1, .36, 1);
+  --ua-slide: 620ms;
+  --ua-tap: 180ms;
+
+  /* Follow the app theme for native controls and scrollbars. */
+  color-scheme: light;
+  font-family: var(--ua-font);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+:root[data-theme='dark'] .ua-root { color-scheme: dark; }
+
+.ua-root *,
+.ua-root *::before,
+.ua-root *::after { box-sizing: border-box; }
+
+/* ══════════════ PAGE SHELL ══════════════ */
+
+.ua-root.ua-page {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+  background: var(--ua-page);
+  color: var(--ua-ink);
+}
+
+/* Ambient colour. Both blobs stay in the lime/green family. */
+.ua-root.ua-page .ua-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+.ua-root.ua-page .ua-blob-1 {
+  width: 44vw; height: 44vw;
+  left: -14vw; top: -16vh;
+  background: radial-gradient(circle, #D4E89A 0%, rgba(212, 232, 154, 0) 68%);
+  animation: ua-drift 38s ease-in-out infinite alternate;
+}
+.ua-root.ua-page .ua-blob-2 {
+  width: 40vw; height: 40vw;
+  right: -12vw; bottom: -14vh;
+  background: radial-gradient(circle, #B9DCC0 0%, rgba(185, 220, 192, 0) 68%);
+  animation: ua-drift 38s ease-in-out -16s infinite alternate;
+}
+@keyframes ua-drift {
+  from { transform: translate(0, 0); }
+  to { transform: translate(3vw, 2.5vh) scale(1.06); }
+}
+
+/* Fine grain over the whole page, as in the reference. */
+.ua-root.ua-page .ua-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: .05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.ua-root .ua-glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, .80), rgba(255, 255, 255, .55));
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, .85);
+  box-shadow: var(--ua-shadow), inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+
+/* ══════════════ CARD ══════════════
+   Two columns, absolute-positioned so the existing four-step slide can
+   shift them. The split is 46/54 rather than the reference's 52/48: the
+   forms-slider below is 400px wide plus 4rem of padding, which does not
+   fit in 48% of a 1024px card. */
+
+.ua-root .ua-card {
+  position: relative;
+  z-index: 2;
+  width: min(1120px, 97vw);
+  min-height: 660px;
+  border-radius: 30px;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(255, 255, 255, .80), rgba(255, 255, 255, .55));
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, .85);
+  box-shadow: var(--ua-shadow-lg);
+}
+
+/* NOTE: the tourism/fiesta rainbow stripe that used to sit here is gone by
+   request. It was a 6px #CE1126/#F2B705/#2D9C6A/#0597F2 gradient — four
+   unrelated hues in a page whose accent is lime. */
+
+/* ══════════════ LEFT / SHOWCASE ══════════════ */
+
+/* The slide moves this panel with transform, not with `left`.
+   `left` is a layout property: transitioning it re-runs layout on every one
+   of the 42 frames, which is what made this slide feel like it stuttered. The
+   offsets are written as ratios because a percentage in translateX() is a
+   percentage of the element's OWN width, and the travel distance is measured
+   against the card: 54% of the card is 54/46 times this panel's width. */
+.ua-root .ua-showcase {
+  position: absolute;
+  top: 0; left: 0;
+  width: 46%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ua-deep);
+  z-index: 20;
+  transform: translateX(0);
+  will-change: transform;
+  transition: transform var(--ua-slide) var(--ua-ease);
+}
+.ua-root .ua-showcase.is-shift { transform: translateX(calc(100% * 54 / 46)); }
+
+/* MT-img.jpg is 5184x3456 (3:2) and this panel is portrait, so `cover`
+   discards roughly half the width and the height is never cropped at all —
+   which is why the vertical offset below barely moves the framing. The bias
+   is upward so the summit clears the copy and the scrim at the bottom. */
+.ua-root .ua-showcase .ua-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: 50% 38%;
+  transform: scale(1.08);
+  will-change: transform;
+  animation: ua-zoom 26s ease-in-out infinite alternate;
+}
+/* Scaled past 1.0 on both axes before it translates, so the drift can never
+   expose an edge of the panel. */
+@keyframes ua-zoom {
+  from { transform: scale(1.08) translate(0, 0); }
+  to { transform: scale(1.16) translate(-1.2%, 1.2%); }
+}
+
+/* Single scrim. The old panel had two absolutely-positioned blurred circles
+   (.inner-blob-red / .inner-blob-white) fighting each other; one gradient
+   does the legibility work and leaves the photograph readable. */
+.ua-root .ua-showcase::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgba(8, 16, 9, .58) 0%,
+    rgba(8, 16, 9, .12) 38%,
+    rgba(8, 16, 9, .76) 100%);
+}
+
+.ua-root .ua-showcase .ua-sc-top {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 3;
+  padding: 34px 34px 0;
+}
+
+/* BACO-TOURISM.png is a wide lockup (642x283, content ~3.24:1), not a square
+   badge, so the frame is sized to the artwork's own aspect. Width-driven, height
+   follows, and the fit rule is exact so the logo can never be cropped. */
+.ua-root .ua-showcase .ua-compass {
+  display: block;
+  width: 196px;
+  height: auto;
+  color: #fff;
+  background: none;
+  border: 0;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  animation: none;
+}
+.ua-root .ua-showcase .ua-compass svg { width: 24px; height: 24px; }
+.ua-root .ua-showcase .ua-compass img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+@keyframes ua-spin { to { transform: rotate(360deg); } }
+
+.ua-root .ua-showcase .ua-sc-bottom {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 3;
+  padding: 34px;
+}
+
+.ua-root .ua-showcase .ua-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ua-lime);
+}
+.ua-root .ua-showcase .ua-tag::before {
+  content: '';
+  width: 22px; height: 2px;
+  border-radius: 2px;
+  background: var(--ua-lime);
+}
+
+.ua-root .ua-showcase .ua-showcase-title {
+  margin: 0 0 12px;
+  font-family: var(--ua-display);
+  font-size: clamp(30px, 3.4vw, 42px);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  color: #fff;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, .35);
+}
+.ua-root .ua-showcase .ua-showcase-title em {
+  font-style: italic;
+  color: var(--ua-lime);
+}
+
+.ua-root .ua-showcase .ua-showcase-sub {
+  margin: 0;
+  max-width: 420px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, .78);
+}
+
+.ua-root .ua-showcase .ua-trail-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+.ua-root .ua-showcase .ua-trail {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border-radius: 99px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .22);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.ua-root .ua-showcase .ua-trail svg { width: 13px; height: 13px; color: var(--ua-lime); }
+
+/* Office pill — was .phase-indicator. */
+.ua-root .ua-showcase .ua-office {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: 20px;
+  width: fit-content;
+  padding: 11px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .22);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+/* BACO-SEAL.png is square (1181x1181) and already a circle, so a fixed 34px
+   square with an exact fit is all it needs -- no plate, no radius, no motion. */
+.ua-root .ua-showcase .ua-office-icon {
+  display: block;
+  width: 34px; height: 34px;
+  flex: 0 0 auto;
+  background: none;
+  border: 0;
+}
+.ua-root .ua-showcase .ua-office-icon svg { width: 16px; height: 16px; }
+.ua-root .ua-showcase .ua-office-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  border-radius: 50%;
+}
+.ua-root .ua-showcase .ua-office span {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .72);
+}
+.ua-root .ua-showcase .ua-office b {
+  display: block;
+  margin-top: 1px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ══════════════ RIGHT / FORMS ══════════════ */
+
+/* Same reasoning as the showcase: transform, not left. This panel is 54% of
+   the card and has to travel 46% of the card, hence 46/54 of its own width. */
+.ua-root .ua-forms {
+  position: absolute;
+  top: 0; left: 46%;
+  width: 54%;
+  height: 100%;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 44px 52px 34px;
+  background: linear-gradient(165deg, rgba(255, 255, 255, .94), rgba(255, 255, 255, .80));
+  transform: translateX(0);
+  will-change: transform;
+  transition: transform var(--ua-slide) var(--ua-ease);
+}
+.ua-root .ua-forms.is-shift { transform: translateX(calc(-100% * 46 / 54)); }
+
+.ua-root .ua-slider {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  height: 620px;
+  overflow: hidden;
+}
+
+.ua-root .ua-step {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  will-change: transform;
+  transition: transform var(--ua-slide) var(--ua-ease);
+}
+.ua-root .slide-in-active { transform: translateX(0); }
+.ua-root .slide-out-left { transform: translateX(-150%); }
+.ua-root .slide-out-right { transform: translateX(150%); }
+
+.ua-root .ua-step-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* The register step is taller than the panel, so this scrolls. Reserving
+     the gutter stops the form jumping sideways the moment a bar appears. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding-right: 6px;
+}
+
+.ua-root .ua-step-card::-webkit-scrollbar { width: 4px; }
+.ua-root .ua-step-card::-webkit-scrollbar-thumb { background: var(--ua-line-2); border-radius: 2px; }
+
+.ua-root .ua-title {
+  margin: 0 0 6px;
+  font-family: var(--ua-display);
+  font-size: 29px;
+  font-weight: 600;
+  letter-spacing: -.02em;
+  color: var(--ua-ink);
+}
+.ua-root .ua-title em {
+  font-style: italic;
+  color: var(--ua-lime-dark);
+}
+.ua-root .ua-sub {
+  margin: 0 0 24px;
+  font-size: 13.5px;
+  color: var(--ua-mut);
+}
+
+.ua-root .ua-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* ══════════════ FIELDS ══════════════ */
+
+.ua-root .ua-field { position: relative; }
+
+.ua-root .ua-field > label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ua-mut);
+}
+
+.ua-root .ua-icon {
+  position: absolute;
+  left: 15px; bottom: 0;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  color: var(--ua-faint);
+  pointer-events: none;
+  transition: color var(--ua-tap) var(--ua-ease);
+  z-index: 1;
+}
+.ua-root .ua-icon svg { width: 16px; height: 16px; }
+
+.ua-root .ua-input {
+  width: 100%;
+  height: 50px;
+  padding: 0 46px 0 44px;
+  font-family: inherit;
+  font-size: 14.5px;
+  color: var(--ua-ink);
+  background: rgba(255, 255, 255, .75);
+  border: 1.5px solid var(--ua-line);
+  border-radius: 14px;
+  outline: none;
+  transition: border-color var(--ua-tap) var(--ua-ease), box-shadow var(--ua-tap) var(--ua-ease), background var(--ua-tap) var(--ua-ease);
+}
+.ua-root .ua-input::placeholder { color: var(--ua-faint); }
+.ua-root .ua-input:focus {
+  border-color: var(--ua-lime-dark);
+  background: #fff;
+  box-shadow: 0 0 0 4px var(--ua-lime-soft);
+}
+.ua-root .ua-field:focus-within .ua-icon { color: var(--ua-lime-dark); }
+
+/* Chrome/Firefox recolour autofilled fields, which would leave the login
+   boxes a different colour from the register boxes. Neutralise it. */
+.ua-root .ua-input:-webkit-autofill,
+.ua-root .ua-input:-webkit-autofill:hover,
+.ua-root .ua-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #fff inset;
+  -webkit-text-fill-color: var(--ua-ink);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+.ua-root .ua-name-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.2fr;
+  gap: 10px;
+}
+
+/* ══════════════ FORGOT / FOOTER ══════════════ */
+
+.ua-root .ua-forgot {
+  display: flex;
+  justify-content: flex-end;
+  margin: 2px 0 0;
+}
+.ua-root .ua-forgot a,
+.ua-root .ua-forgot button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ua-mut);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color var(--ua-tap) var(--ua-ease);
+}
+.ua-root .ua-forgot a:hover,
+.ua-root .ua-forgot button:hover { color: var(--ua-ink); }
+
+.ua-root .ua-footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--ua-mut);
+}
+.ua-root .ua-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ua-ink);
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: border-color var(--ua-tap) var(--ua-ease), color var(--ua-tap) var(--ua-ease);
+}
+.ua-root .ua-toggle:hover {
+  color: var(--ua-lime-dark);
+  border-bottom-color: var(--ua-lime);
+}
+
+/* ══════════════ BUTTON ══════════════ */
+
+.ua-root .ua-btn {
+  width: 100%;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 20px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ua-ink);
+  background: linear-gradient(135deg, #C4F01E, #9BC609);
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px var(--ua-lime-glow);
+  transition: transform var(--ua-tap) var(--ua-ease), box-shadow var(--ua-tap) var(--ua-ease), filter var(--ua-tap) var(--ua-ease);
+}
+.ua-root .ua-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: saturate(1.08);
+  box-shadow: 0 14px 32px var(--ua-lime-glow);
+}
+.ua-root .ua-btn:active:not(:disabled) { transform: translateY(0); }
+.ua-root .ua-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.ua-root .ua-btn svg { width: 17px; height: 17px; }
+
+/* Loading spinner, swapped in for the label while a request is in flight. */
+.ua-root .ua-spin {
+  width: 18px; height: 18px;
+  animation: ua-spin 0.7s linear infinite;
+}
+@keyframes ua-spin { to { transform: rotate(360deg); } }
+
+/* "(optional)" qualifier inside a field label. */
+.ua-root .ua-opt {
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: none;
+  color: var(--ua-faint);
+}
+
+/* The set-password step is two fields; it does not need the full measure. */
+.ua-root .ua-form--narrow { max-width: 320px; margin: 0 auto; }
+.ua-root .ua-btn .ua-spacer { display: none; }
+
+.ua-root .ua-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 20px 0 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  color: var(--ua-faint);
+}
+.ua-root .ua-divider::before,
+.ua-root .ua-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ua-line);
+}
+
+.ua-root .ua-google-slot {
+  width: 100%;
+  min-height: 50px;
+  display: flex;
+  justify-content: center;
+}
+
+/* ══════════════ OTP VERIFICATION ══════════════ */
+
+.ua-root .ua-verify {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.ua-root .ua-verify-icon {
+  display: grid;
+  place-items: center;
+  width: 64px; height: 64px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: var(--ua-lime-soft);
+  border: 1.5px solid var(--ua-lime-dark);
+  color: var(--ua-lime-dark);
+}
+.ua-root .ua-verify-icon svg { width: 30px; height: 30px; }
+
+/* Set-password step. The old markup carried this as an inline
+   style="background: var(--bb-danger-soft)"; as a rule it is inspectable
+   and does not depend on a token from another feature's stylesheet. */
+.ua-root .ua-verify-icon--warn {
+  background: var(--ua-red-soft);
+  border-color: var(--ua-red);
+  color: var(--ua-red);
+}
+
+.ua-root .ua-verify-text {
+  margin: 0 0 24px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ua-mut);
+}
+.ua-root .ua-verify-text strong { color: var(--ua-ink); }
+
+.ua-root .ua-otp-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.ua-root .ua-otp {
+  width: 48px; height: 56px;
+  text-align: center;
+  font-family: var(--ua-font);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ua-ink);
+  background: rgba(255, 255, 255, .75);
+  border: 1.5px solid var(--ua-line);
+  border-radius: 12px;
+  outline: none;
+  transition: border-color var(--ua-tap) var(--ua-ease), box-shadow var(--ua-tap) var(--ua-ease);
+}
+.ua-root .ua-otp:focus {
+  border-color: var(--ua-lime-dark);
+  box-shadow: 0 0 0 4px var(--ua-lime-soft);
+}
+.ua-root .ua-otp:disabled { opacity: .6; }
+.ua-root .ua-otp::-webkit-outer-spin-button,
+.ua-root .ua-otp::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.ua-root .ua-otp[type='number'] { -moz-appearance: textfield; }
+
+.ua-root .ua-resend {
+  margin-top: 4px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--ua-faint);
+}
+.ua-root .ua-resend button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ua-lime-dark);
+  cursor: pointer;
+}
+.ua-root .ua-resend button:hover { text-decoration: underline; }
+
+.ua-root .ua-back,
+.ua-root .ua-skip {
+  margin-top: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--ua-mut);
+  cursor: pointer;
+  transition: color var(--ua-tap) var(--ua-ease);
+}
+.ua-root .ua-back { display: flex; margin-left: auto; margin-right: auto; }
+.ua-root .ua-skip { text-decoration: underline; text-underline-offset: 3px; }
+.ua-root .ua-back:hover,
+.ua-root .ua-skip:hover { color: var(--ua-ink); }
+.ua-root .ua-back svg { width: 15px; height: 15px; }
+
+/* ══════════════ ERROR TOAST ══════════════ */
+
+.ua-root .ua-toast {
+  position: fixed;
+  left: 50%; bottom: 26px;
+  z-index: 9999;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 480px;
+  padding: 13px 14px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--bb-danger);
+  background: rgba(255, 255, 255, .92);
+  border: 1px solid var(--bb-danger);
+  box-shadow: var(--ua-shadow);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+.ua-root .ua-toast button {
+  background: none;
+  border: none;
+  color: var(--bb-danger);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.ua-root .ua-toast-enter-active,
+.ua-root .ua-toast-leave-active { transition: all .3s ease; }
+.ua-root .ua-toast-enter-from,
+.ua-root .ua-toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(16px); }
+
+/* ══════════════ RESPONSIVE ══════════════
+   The showcase collapses to a short banner and the form takes the rest.
+   The old breakpoint hid the office pill entirely, which also hid the
+   "Basecamp Baco" identity; it is kept here, just tighter. */
+
+@media (max-width: 920px) {
+  .ua-root.ua-page { padding: 14px; }
+  .ua-root .ua-card {
+    width: min(480px, 97vw);
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    border-radius: 24px;
+  }
+  .ua-root .ua-showcase {
+    position: relative;
+    transform: none !important;
+    width: 100%;
+    height: 250px;
+    flex: 0 0 auto;
+    transition: none;
+  }
+  .ua-root .ua-showcase .ua-photo { animation: none; transform: none; }
+  .ua-root .ua-showcase .ua-sc-top { padding: 20px 20px 0; }
+  .ua-root .ua-showcase .ua-compass { width: 148px; }
+  .ua-root .ua-showcase .ua-compass svg { width: 19px; height: 19px; }
+  .ua-root .ua-showcase .ua-sc-bottom { padding: 20px; }
+  .ua-root .ua-showcase .ua-showcase-title { font-size: 24px; }
+  .ua-root .ua-showcase .ua-showcase-sub { display: none; }
+  .ua-root .ua-showcase .ua-trail-row { display: none; }
+  .ua-root .ua-showcase .ua-office { margin-top: 12px; }
+
+  .ua-root .ua-forms {
+    position: relative;
+    left: 0;
+    transform: none !important;
+    width: 100%;
+    height: auto;
+    padding: 28px 26px;
+    transition: none;
+  }
+  .ua-root .ua-slider { height: 600px; }
+  .ua-root .ua-name-row { grid-template-columns: 1fr; }
+  .ua-root .ua-otp { width: 44px; height: 50px; font-size: 19px; }
+}
+
+@media (max-width: 480px) {
+  .ua-root.ua-page { padding: 10px; }
+  .ua-root .ua-showcase { height: 210px; }
+  .ua-root .ua-showcase .ua-showcase-title { font-size: 21px; }
+  .ua-root .ua-title { font-size: 25px; }
+  .ua-root .ua-otp-row { gap: 7px; }
+  .ua-root .ua-otp { width: 40px; height: 46px; font-size: 17px; }
+}
+
+/* ══════════════ REDUCED MOTION ══════════════
+   The showcase runs three infinite animations (drift, zoom, compass spin).
+   Honour the OS setting rather than forcing them on. */
+
+@media (prefers-reduced-motion: reduce) {
+  .ua-root.ua-page .ua-blob,
+  .ua-root .ua-showcase .ua-photo,
+  .ua-root .ua-showcase .ua-compass { animation: none; }
+  .ua-root .ua-showcase,
+  .ua-root .ua-forms,
+  .ua-root .ua-step { transition: none; }
+  .ua-root .ua-btn:hover:not(:disabled) { transform: none; }
+}

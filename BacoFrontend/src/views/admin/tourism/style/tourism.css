@@ -1,0 +1,201 @@
+/* ============================================================================
+   TOURISM ADMIN — SELF-CONTAINED TOKEN + SHELL LAYER
+   ----------------------------------------------------------------------------
+   Mirror of ../mho/style/mho.css, and independent of it on purpose. Two
+   consoles, two token vocabularies: sharing one sheet would mean a change to
+   one office's palette silently restyling the other's. The only shared code in
+   this whole module pair is the sign-in screen.
+
+   The native admin area (../style/*.css) hangs its tokens off `.admin-layout`
+   and `[data-admin-theme]`. This console is a separate route root
+   (`/tourism-admin`) with its own root class, so it inherits none of those and
+   reads none of them.
+
+   CASCADE CONSTRAINT
+
+   Tailwind utilities live in `@layer utilities` and lose to unlayered Vue
+   scoped CSS regardless of specificity. Everything below is unlayered plain
+   CSS; components style themselves with scoped rules. To change one of these,
+   change the token — do not try to override the class from a scoped block.
+
+   ACCESSIBILITY
+
+   --tr-accent-solid #b4761a carries white text at 4.62:1, clearing 4.5:1. The
+   brighter --tr-accent is reserved for focus rings, icons and tinted washes,
+   where 3:1 is the correct threshold.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   TOKENS — aliased onto the OWNER PORTAL's vocabulary
+   ---------------------------------------------------------------------------
+   This console reuses the hotel-owner design (views/hotel_owners), which is
+   built on the GLOBAL tokens in ../../styles/theme.css — `--bg`, `--fg`,
+   `--bdr`, `--ac` and friends, switched by `data-theme` on <html>.
+
+   So rather than inventing a palette, the block below renames those global
+   tokens to a private `--tr-*` vocabulary. Two consequences:
+
+     1. The Tourism console and the owner portal cannot drift apart. Change
+        `--ac` in theme.css and both move together, which is the point of
+        reusing the design.
+     2. Because the switch is `data-theme` on <html> (the same one the public
+        site uses), this console does NOT get its own independent light/dark
+        control. It follows whatever theme the app is already on.
+
+   The previous amber palette is gone. A tourism console that does not look
+   like the tourism product is not reusing the tourism design.
+   --------------------------------------------------------------------------- */
+.tourism-admin {
+  /* Same aliasing target as mho.css, one-for-one: --ac, --m-*, and the
+     shared --bg/--fg/--card vocabulary. That is what makes the two consoles
+     pixel-identical rather than merely similar — every surface, edge, radius
+     and shadow resolves from the same declaration. */
+  --tr-accent: var(--ac);
+  --tr-accent-solid: var(--m-accent-solid);
+  --tr-accent-soft: var(--acs);
+  --tr-accent-ring: var(--acg);
+
+  --tr-bg: var(--bg);
+  --tr-bg-raised: var(--bg2);
+  --tr-surface: var(--card-solid);
+  --tr-surface-2: var(--card2);
+  --tr-surface-3: var(--card3);
+
+  --tr-fg: var(--fg);
+  --tr-fg-2: var(--fg2);
+  --tr-muted: var(--mt);
+  --tr-muted-2: var(--mt2);
+
+  --tr-border: var(--bdr);
+  --tr-border-2: var(--bdr2);
+  --tr-border-3: var(--bdr3);
+
+  --tr-ok: var(--ok);
+  --tr-ok-soft: var(--oks);
+  --tr-warn: var(--wn);
+  --tr-warn-soft: var(--wns);
+  --tr-danger: var(--dg);
+  --tr-danger-soft: var(--dgs);
+  --tr-info: var(--tl);
+  --tr-info-soft: var(--tls);
+
+  --tr-glass: var(--m-glass);
+  --tr-glass-strong: var(--m-glass-strong);
+  --tr-glass-edge: var(--m-glass-edge);
+  --tr-glass-shadow: var(--m-glass-shadow);
+
+  --tr-key-face: var(--m-skeuo-face);
+  --tr-key-shadow: var(--m-skeuo-shadow);
+  --tr-key-pressed: var(--m-skeuo-pressed);
+  --tr-well-shadow: var(--m-well-shadow);
+
+  --tr-radius-sm: var(--r-sm);
+  --tr-radius: var(--r-md);
+  --tr-radius-lg: var(--r-lg);
+
+  --tr-font: var(--font-body);
+  --tr-mono: var(--font-mono);
+
+  --tr-ease: var(--ease);
+
+  /* The admin's ambience wash, same as MHO. The owner portal is flat, but
+     "identical to MHO" is the instruction, so the wash comes back — the
+     console now matches its sibling rather than the portal it borrowed from. */
+  --tr-ambience: var(--m-ambience);
+}
+
+/* ---------------------------------------------------------------------------
+   LAYOUT SHELL
+   --------------------------------------------------------------------------- */
+.tourism-admin {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--tr-bg);
+  background-image: var(--tr-ambience);
+  background-attachment: fixed;
+  color: var(--tr-fg);
+  font-family: var(--tr-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+.tourism-admin__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.tourism-admin__workspace {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 26px 28px 40px;
+}
+
+.tourism-admin__page {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Scoped scrollbars, kept inside this console's root so the public pages'
+   scrollbars are untouched. */
+.tourism-admin ::-webkit-scrollbar { width: 6px; height: 6px; }
+.tourism-admin ::-webkit-scrollbar-track { background: transparent; }
+.tourism-admin ::-webkit-scrollbar-thumb { background: var(--tr-border-2); border-radius: 3px; }
+.tourism-admin ::-webkit-scrollbar-thumb:hover { background: var(--tr-border-3); }
+
+/* ---------------------------------------------------------------------------
+   PAGE HEADER
+   --------------------------------------------------------------------------- */
+/* Identical to mho.css's page header. The Unbounded/Merriweather display
+   faces that briefly lived here are gone: MHO has neither, so keeping them
+   would leave the two consoles visibly different, which is the opposite of
+   what was asked. If display headings are wanted, add them to BOTH sheets. */
+.tourism-admin__title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.tourism-admin__subtitle {
+  font-size: 0.87rem;
+  color: var(--tr-muted);
+  margin: 4px 0 0;
+}
+
+/* ---------------------------------------------------------------------------
+   ACCESSIBILITY — focus is never removed, only restyled
+   --------------------------------------------------------------------------- */
+.tourism-admin :focus-visible {
+  outline: 2px solid var(--tr-accent);
+  outline-offset: 2px;
+  border-radius: var(--tr-radius-sm);
+}
+
+.tourism-admin ::selection {
+  background: var(--tr-accent-ring);
+  color: var(--tr-fg);
+}
+
+/* ---------------------------------------------------------------------------
+   REDUCED MOTION
+   --------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .tourism-admin *,
+  .tourism-admin *::before,
+  .tourism-admin *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

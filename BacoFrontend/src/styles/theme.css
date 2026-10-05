@@ -1,0 +1,104 @@
+/* ═══════════════════════════════════════════
+   BACO ADMIN — DUAL THEME TOKENS
+   ═══════════════════════════════════════════ */
+
+/* ── LIGHT MODE (default) ── */
+:root {
+  --bg: #f5f6f8;
+  --bg2: #ffffff;
+  --bg3: #f0f2f5;
+  --card-solid: #ffffff;
+  --card2: #fafbfc;
+  --card3: #f5f6f8;
+
+  --fg: #0b1d35;
+  --fg2: #334155;
+  --mt: #8896a7;
+  --mt2: #b0bac6;
+
+  --bdr: #dde2ea;
+  --bdr2: #c8cfd8;
+  --bdr3: #a1a1aa;
+
+  --ac: #0b1d35;
+  --ac2: #c9a84c;
+  --acs: rgba(11, 29, 53, 0.08);
+  --acg: rgba(11, 29, 53, 0.15);
+
+  --ok: #15803d;
+  --oks: #dcfce7;
+  --wn: #b45309;
+  --wns: #fef3c7;
+  --dg: #c0392b;
+  --dgs: #fee2e2;
+  --tl: #1d4ed8;
+  --tls: #dbeafe;
+  --vi: #7c3aed;
+  --vis: #ede9fe;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.12);
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: light;
+}
+
+/* ── DARK MODE ── */
+[data-theme="dark"] {
+  --bg: #0a0a0f;
+  --bg2: #14141d;
+  --bg3: #1e1e28;
+  --card-solid: #0f0f16;
+  --card2: rgba(255, 255, 255, 0.02);
+  --card3: rgba(255, 255, 255, 0.04);
+
+  --fg: #f5f5f7;
+  --fg2: #c9c9d4;
+  --mt: #7c7c8f;
+  --mt2: #52525e;
+
+  --bdr: rgba(255, 255, 255, 0.08);
+  --bdr2: rgba(255, 255, 255, 0.14);
+  --bdr3: rgba(255, 255, 255, 0.22);
+
+  --ac: #ff6b35;
+  --ac2: #ffd600;
+  --acs: rgba(255, 107, 53, 0.12);
+  --acg: rgba(255, 107, 53, 0.25);
+
+  --ok: #00e68a;
+  --oks: rgba(0, 230, 138, 0.12);
+  --wn: #ffd600;
+  --wns: rgba(255, 214, 0, 0.10);
+  --dg: #ff3b5c;
+  --dgs: rgba(255, 59, 92, 0.12);
+  --tl: #00e5ff;
+  --tls: rgba(0, 229, 255, 0.10);
+  --vi: #b388ff;
+  --vis: rgba(179, 136, 255, 0.12);
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
+
+  color-scheme: dark;
+}
+
+/* ── Smooth transitions on theme switch ── */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+html * {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}

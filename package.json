@@ -1,0 +1,29 @@
+{
+  "name": "bacoofficial",
+  "version": "1.0.0",
+  "description": "Baco Municipality Official Website",
+  "main": "start.js",
+  "scripts": {
+    "start": "node start.js",
+    "dev": "node start.js",
+    "backend": "cd BacoBackend && node server.js",
+    "chat": "cd BacoFrontend && node server.js",
+    "frontend": "cd BacoFrontend && npm run dev",
+    "install:all": "npm install && cd BacoBackend && npm install && cd ../BacoFrontend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  },
+  "dependencies": {
+    "@fullcalendar/core": "^6.1.21",
+    "@fullcalendar/daygrid": "^6.1.21",
+    "@fullcalendar/vue3": "^7.1.0",
+    "chart.js": "^4.5.1",
+    "ethers": "^6.17.0",
+    "form-data": "^4.0.6",
+    "leaflet": "^1.9.4",
+    "pdf2json": "^4.0.3",
+    "tesseract.js": "^7.0.0",
+    "vue3-google-map": "^0.27.2"
+  }
+}
