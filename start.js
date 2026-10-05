@@ -45,7 +45,7 @@ const SERVICES = [
     args: isProduction 
       ? ['vite', 'preview', '--host', '--port', String(FRONTEND_PORT)]
       : ['vite', '--host', '--port', String(FRONTEND_PORT)],
-    port: FRONTEND_PORT,
+      port: FRONTEND_PORT, 
     prefix: '🌐 '
   }
 ];
