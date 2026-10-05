@@ -37,9 +37,9 @@ app.use((req, res) => {
   });
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n✅ Backend running at http://localhost:${PORT}`);
   console.log(`   API Routes: http://localhost:${PORT}/api/*`);
   console.log(`   Uploads:   http://localhost:${PORT}/uploads/`);
