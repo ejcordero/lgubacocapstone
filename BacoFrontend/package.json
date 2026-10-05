@@ -3,11 +3,11 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite --host",
-    "build": "vite build",
-    "preview": "vite preview --host"
-  },
+"scripts": {
+  "dev": "concurrently \"vite --host\" \"node server.js\"",
+  "build": "vite build",
+  "preview": "vite preview --host --port 4173"
+},
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
     "@fortawesome/free-solid-svg-icons": "^7.2.0",
