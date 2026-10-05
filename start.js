@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * 🏛️ BACO Official - Unified Dev Server
- * Runs: Backend (3000) + Chat API (3001) + Frontend (5173)
+ * 🏛️ BACO Official - Unified Server
+ * Runs: Backend (3000) + Chat API (3001) + Frontend (Dynamic Port)
  * 
  * Usage: node start.js
  */
@@ -13,6 +13,10 @@ const path = require('path');
 // ============================================
 // ⚙️ CONFIGURATION
 // ============================================
+// Railway injects PORT. Fallback to 5173 for local dev.
+const FRONTEND_PORT = process.env.PORT || 5173;
+const isProduction = process.env.NODE_ENV === 'production';
+
 const SERVICES = [
   {
     name: 'BACKEND',
@@ -37,8 +41,11 @@ const SERVICES = [
     color: '\x1b[32m', // Green
     cwd: './BacoFrontend',
     cmd: 'npx',
-    args: ['vite', '--host'],
-    port: 5173,
+    // Use 'vite preview' for production (faster, optimized), 'vite' for local dev
+    args: isProduction 
+      ? ['vite', 'preview', '--host', '--port', String(FRONTEND_PORT)]
+      : ['vite', '--host', '--port', String(FRONTEND_PORT)],
+    port: FRONTEND_PORT,
     prefix: '🌐 '
   }
 ];
@@ -56,12 +63,13 @@ function log(serviceName, color, message) {
 
 function printHeader() {
   console.log('\n' + '='.repeat(60));
-  console.log('  🏛️  BACO OFFICIAL - UNIFIED DEV SERVER');
+  console.log('  🏛️  BACO OFFICIAL - UNIFIED SERVER');
+  console.log(`  Environment: ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'}`);
   console.log('  Starting all services...\n');
   console.log('  Services:');
   console.log('    🗄️  Backend   → http://localhost:3000');
   console.log('    🤖  Chat API  → http://localhost:3001');
-  console.log('    🌐  Frontend  → http://localhost:5173');
+  console.log(`    🌐  Frontend  → http://localhost:${FRONTEND_PORT}`);
   console.log('\n' + '='.repeat(60));
   console.log('\n  Press Ctrl+C to stop all services\n');
   console.log('-'.repeat(60) + '\n');
@@ -78,7 +86,6 @@ function printFooter() {
 function startService(service, index) {
   const { name, color, cwd, cmd, args, port, prefix } = service;
   
-  // Delay start slightly to avoid race conditions
   setTimeout(() => {
     log(name, color, `${prefix}Starting ${name} on port ${port}...`);
 
@@ -91,51 +98,34 @@ function startService(service, index) {
 
     processes.set(name, { proc, port });
 
-    // === STDOUT ===
     proc.stdout.on('data', (data) => {
       const lines = data.toString().split('\n').filter(l => l.trim());
       lines.forEach(line => {
         console.log(`${color}${prefix}${'\x1b[0m'}${line}`);
         
-        // Detect successful startup
         if (line.toLowerCase().includes('running') || 
             line.toLowerCase().includes('ready') ||
-            line.includes('localhost:' + port)) {
-          log(name, color, `✅ ${name} is READY → http://localhost:${port}`);
+            line.includes('localhost:' + port) ||
+            line.includes('Local:')) {
+          log(name, color, `✅ ${name} is READY`);
         }
       });
     });
 
-    // === STDERR ===
     proc.stderr.on('data', (data) => {
       const lines = data.toString().split('\n').filter(l => l.trim());
       lines.forEach(line => {
-        // Color errors red
         console.log(`\x1b[31m${prefix}ERROR: ${line}\x1b[0m`);
-        
-        // Helpful messages for common errors
         if (line.includes('EADDRINUSE')) {
-          console.log(`\x1b[33m${prefix}⚠️  Port ${port} is busy! Run: npx kill-port ${port}\x1b[0m`);
-        }
-        if (line.includes('ECONNREFUSED') || line.includes('connect')) {
-          console.log(`\x1b[33m${prefix}⚠️  Database connection failed! Check if MySQL is running.\x1b[0m`);
-        }
-        if (line.includes('Cannot find module')) {
-          console.log(`\x1b[33m${prefix}⚠️  Missing module! Run: npm install\x1b[0m`);
+          console.log(`\x1b[33m${prefix}⚠️  Port ${port} is busy!\x1b[0m`);
         }
       });
     });
 
-    // === ERROR ===
     proc.on('error', (err) => {
       console.error(`\x1b[31m${prefix}❌ Failed to start ${name}: ${err.message}\x1b[0m`);
-      
-      if (err.code === 'ENOENT') {
-        console.error(`\x1b[33m${prefix}→ Make sure "${cmd}" is installed\x1b[0m`);
-      }
     });
 
-    // === EXIT ===
     proc.on('exit', (code) => {
       if (!isShuttingDown && code !== 0) {
         console.log(`\x1b[33m${prefix}⚠️  ${name} exited (code: ${code}). Restarting...\x1b[0m`);
@@ -145,7 +135,7 @@ function startService(service, index) {
       }
     });
 
-  }, index * 1500); // Stagger starts by 1.5 seconds
+  }, index * 1500);
 }
 
 // ============================================
@@ -160,18 +150,11 @@ function shutdown(signal) {
   console.log('='.repeat(60) + '\n');
 
   let count = processes.size;
-  
-  if (count === 0) {
-    printFooter();
-    process.exit(0);
-  }
+  if (count === 0) { printFooter(); process.exit(0); }
 
   processes.forEach((data, name) => {
     const { proc } = data;
-    
-    // Try graceful shutdown first
     const killTimeout = setTimeout(() => {
-      console.log(`  ⚡ Force killing ${name}...`);
       proc.kill('SIGKILL');
       count--;
       if (count <= 0) printFooter() || process.exit(0);
@@ -188,32 +171,16 @@ function shutdown(signal) {
     proc.kill('SIGTERM');
   });
 
-  // Hard exit after 10 seconds
-  setTimeout(() => {
-    console.log('\n  ⚠️  Forced shutdown\n');
-    process.exit(1);
-  }, 10000);
+  setTimeout(() => { process.exit(1); }, 10000);
 }
 
 // ============================================
 // ▶️ START EVERYTHING
 // ============================================
 printHeader();
+SERVICES.forEach((service, index) => { startService(service, index); });
 
-SERVICES.forEach((service, index) => {
-  startService(service, index);
-});
-
-// Handle shutdown signals
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
-
-// Handle uncaught errors
-process.on('uncaughtException', (err) => {
-  console.error('\n❌ Uncaught Exception:', err.message);
-  shutdown('ERROR');
-});
-
-process.on('unhandledRejection', (reason) => {
-  console.error('\n❌ Unhandled Rejection:', reason);
-});
+process.on('uncaughtException', (err) => { console.error('\n❌ Uncaught Exception:', err.message); shutdown('ERROR'); });
+process.on('unhandledRejection', (reason) => { console.error('\n❌ Unhandled Rejection:', reason); });

@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node start.js",
     "dev": "node start.js",
+    "build": "cd BacoFrontend && npm run build",
     "backend": "cd BacoBackend && node server.js",
     "chat": "cd BacoFrontend && node server.js",
     "frontend": "cd BacoFrontend && npm run dev",
