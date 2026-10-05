@@ -10,10 +10,6 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-// ============================================
-// ⚙️ CONFIGURATION
-// ============================================
-// Railway injects PORT. Fallback to 5173 for local dev.
 const FRONTEND_PORT = process.env.PORT || 5173;
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -38,14 +34,13 @@ const SERVICES = [
   },
   {
     name: 'FRONTEND',
-    color: '\x1b[32m', // Green
+    color: '\x1b[32m',
     cwd: './BacoFrontend',
     cmd: 'npx',
-    // Use 'vite preview' for production (faster, optimized), 'vite' for local dev
     args: isProduction 
-      ? ['vite', 'preview', '--host', '--port', String(FRONTEND_PORT)]
-      : ['vite', '--host', '--port', String(FRONTEND_PORT)],
-      port: FRONTEND_PORT, 
+      ? ['vite', 'preview', '--host', '0.0.0.0', '--port', String(FRONTEND_PORT)]
+      : ['vite', '--host', '0.0.0.0', '--port', String(FRONTEND_PORT)],
+    port: FRONTEND_PORT,
     prefix: '🌐 '
   }
 ];
