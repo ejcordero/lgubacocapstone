@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
-      port: 5173,
+      port: process.env.PORT || 5173, // ← DYNAMIC PORT FOR RAILWAY
       host: true,
       allowedHosts: true,
       proxy: {
